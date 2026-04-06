@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# environment
+.env
+.env.*
+!.env.example
+
+# frontend
+GLOW-frontend/node_modules
+GLOW-frontend/dist
+
+# backend
+GLOW-backend/venv
+GLOW-backend/__pycache__
+GLOW-backend/.pytest_cache
+GLOW-backend/.mypy_cache
+
+# Python compiled
+*.pyc
+*.pyo
+
+# IDE
+.vscode
+.idea

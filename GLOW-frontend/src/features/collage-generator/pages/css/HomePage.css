@@ -1,0 +1,134 @@
+/* Base = MOBILE FIRST */
+.HomePage {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #222;
+  padding: 10px;
+}
+
+/* Logo scales nicely on small screens */
+.HomePage-logo {
+  width: 120px;
+  height: auto;
+  margin: 15px 0;
+}
+
+/* Header */
+.HomePage-header {
+  background-color: #000;
+  color: #fff;
+  padding: 20px 15px;
+}
+
+.HomePage-header h1 {
+  font-size: 1.6rem;
+  margin: 10px 0;
+}
+
+.HomePage-header h2 {
+  font-size: 1.1rem;
+  font-weight: normal;
+}
+
+.HomePage-header h3 {
+  font-size: 0.95rem;
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+/* Main content */
+.HomePage-main {
+  width: 100%;
+  padding: 15px;
+  text-align: left;
+}
+
+/* Sections */
+.HomePage-main section {
+  margin-bottom: 30px;
+}
+
+/* Headings */
+.HomePage-main h2 {
+  color: #ff00ff;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+/* Text readability on mobile */
+.HomePage-main p,
+.HomePage-main li {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Lists spacing */
+.HomePage-main ul,
+.HomePage-main ol {
+  padding-left: 20px;
+}
+
+/* Footer */
+.HomePage-footer {
+  background-color: #000;
+  color: #fff;
+  padding: 12px;
+  font-size: 0.85rem;
+  margin-top: 30px;
+}
+
+/* ------------------------- */
+/* TABLET (>= 768px) */
+/* ------------------------- */
+@media (min-width: 768px) {
+  .HomePage-logo {
+    width: 150px;
+  }
+
+  .HomePage-header {
+    padding: 30px;
+  }
+
+  .HomePage-header h1 {
+    font-size: 2rem;
+  }
+
+  .HomePage-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .HomePage-main {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .HomePage-main p,
+  .HomePage-main li {
+    font-size: 1rem;
+  }
+}
+
+/* ------------------------- */
+/* DESKTOP (>= 1024px) */
+/* ------------------------- */
+@media (min-width: 1024px) {
+  .HomePage-main {
+    max-width: 900px;
+  }
+
+  .HomePage-logo {
+    width: 180px;
+  }
+
+  .HomePage-header h1 {
+    font-size: 2.4rem;
+  }
+
+  .HomePage-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .HomePage-header h3 {
+    font-size: 1.1rem;
+  }
+}
