@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.controllers.video_controller import router as video_router
 from app.api.controllers.images_controller import router as images_router
 from app.api.controllers.collages_controller import router as collages_router
 from app.api.controllers.videos_controller import router as videos_router
@@ -22,7 +21,6 @@ app.add_middleware(
 )
 
 # ✅ include your real API routes
-app.include_router(video_router, prefix="/api")
 app.include_router(images_router, prefix="/api")
 app.include_router(collages_router, prefix="/api")
 app.include_router(videos_router, prefix="/api")
