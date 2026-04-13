@@ -8,7 +8,10 @@ export interface DBTimeResponse {
   time: string;
 }
 
-const API_URL = "https://glow2026.duckdns.org";
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://127.0.0.1:8000"
+    : "https://glow2026.duckdns.org";
 
 export async function getStatus(): Promise<StatusResponse> {
   const res = await fetch(`${API_URL}/api`);
