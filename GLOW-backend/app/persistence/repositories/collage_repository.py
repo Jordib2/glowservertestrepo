@@ -15,3 +15,15 @@ class CollageRepository:
         db.close()
 
         return {"message": f"Collage {collage_id} saved"}
+
+    def get_collage(self, collage_id: int):
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM collages WHERE id = %s", (collage_id,))
+        result = cursor.fetchone()
+
+        cursor.close()
+        db.close()
+
+        return result

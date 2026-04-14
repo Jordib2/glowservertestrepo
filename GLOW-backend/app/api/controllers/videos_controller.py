@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.persistence.repositories.videos_repository import VideosRepository
+from app.services.video_service.py import VideoService
 
 router = APIRouter()
 repo = VideosRepository()
