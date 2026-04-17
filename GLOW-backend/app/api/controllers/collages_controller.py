@@ -8,7 +8,6 @@ repo = CollagesRepository()
 def create_collage():
     return repo.create_collage()
 
-
 @router.get("/collages")
 def get_collages():
     return repo.get_collages()

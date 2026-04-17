@@ -1,13 +1,22 @@
+import os  
+from pathlib import Path
+from dotenv import load_dotenv
+
+env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=env_path)
+from dotenv import dotenv_values
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from app.api.controllers.images_controller import router as images_router
 from app.api.controllers.collages_controller import router as collages_router
 from app.api.controllers.videos_controller import router as videos_router
 from app.core.db import get_db
 
 app = FastAPI(title="GLOW API")
-
-# ✅ CORS (for local + production)
+# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -20,17 +29,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ include your real API routes
+# ✅ routes
 app.include_router(images_router, prefix="/api")
 app.include_router(collages_router, prefix="/api")
 app.include_router(videos_router, prefix="/api")
+
+# ✅ THIS IS THE FIXED LINE 👇 (USE MEDIA_DIR, NOT HARDCODED PATH)
+MEDIA_DIR = os.getenv("MEDIA_DIR", "media")
+
+os.makedirs(MEDIA_DIR, exist_ok=True)
+app.mount("/media", StaticFiles(directory=MEDIA_DIR), name="media")
+
 # ✅ health check
 @app.get("/api")
 def root():
     return {"status": "working"}
 
-
-# ✅ DB test (IMPORTANT — keep this!)
+# ✅ DB test
 @app.get("/api/db")
 def db_test():
     try:
