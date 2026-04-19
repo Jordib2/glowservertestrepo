@@ -15,7 +15,7 @@ export const router = createBrowserRouter([
         children: [
             { 
                 index: true,
-                element: <Homepage /> 
+                element: <ImagesUploadPage /> 
             },
             {
                 path: "review-images",
