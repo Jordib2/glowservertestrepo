@@ -6,7 +6,7 @@ class CollagesRepository:
         db = get_db()
         cursor = db.cursor()
 
-        cursor.execute("INSERT INTO collages VALUES (NULL)")
+        cursor.execute("INSERT INTO collages (id, collage_path) VALUES (NULL, '')")
 
         db.commit()
         collage_id = cursor.lastrowid
@@ -27,4 +27,4 @@ class CollagesRepository:
         db.close()
 
         return result
-    
+
