@@ -2,22 +2,22 @@ from app.core.db import get_db
 
 class VideosRepository:
 
-    def save_video(self, collage_id: int):
+    def save_video(self, collage_id: int, video_path: str):
         db = get_db()
         cursor = db.cursor()
 
         cursor.execute(
-            "INSERT INTO videos (collage_id) VALUES (%s)",
-            (collage_id,)
+            "INSERT INTO videos (collage_id, video_path) VALUES (%s, %s)",
+            (collage_id, video_path)
         )
 
-        db.commit()
         video_id = cursor.lastrowid
 
+        db.commit()
         cursor.close()
         db.close()
 
-        return {"id": video_id}
+        return {"id": video_id, "video_path": video_path}
 
     def get_videos(self, collage_id: int):
         db = get_db()
