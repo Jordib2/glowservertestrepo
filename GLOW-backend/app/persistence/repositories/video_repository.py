@@ -1,6 +1,6 @@
 from app.core.db import get_db
 
-class VideoRepository:
+class VideosRepository:
 
     def save_video(self, collage_id: int, video_path: str) -> dict:
         db = get_db()

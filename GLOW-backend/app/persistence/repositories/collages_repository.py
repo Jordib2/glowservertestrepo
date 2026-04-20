@@ -2,11 +2,14 @@ from app.core.db import get_db
 
 class CollagesRepository:
 
-    def create_collage(self):
+    def create_collage(self, collage_path):
         db = get_db()
         cursor = db.cursor()
 
-        cursor.execute("INSERT INTO collages (id, collage_path) VALUES (NULL, '')")
+        cursor.execute(
+            "INSERT INTO collages (collage_path) VALUES (%s)",
+            (collage_path,)
+        )
 
         db.commit()
         collage_id = cursor.lastrowid
@@ -14,7 +17,7 @@ class CollagesRepository:
         cursor.close()
         db.close()
 
-        return {"id": collage_id}
+        return {"id": collage_id, "collage_path": collage_path}
 
     def get_collages(self):
         db = get_db()
