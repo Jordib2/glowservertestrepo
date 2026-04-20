@@ -1,14 +1,20 @@
-from fastapi import APIRouter
-from app.services.video_service.py import VideoService
 from fastapi import APIRouter, UploadFile, File, Form
+from fastapi.staticfiles import StaticFiles
 from app.persistence.repositories.videos_repository import VideosRepository
 import requests
 import os
 import shutil
 import uuid
 
+from app.services.video_service import VideoService
+from app.services.image_service import ImageService
+from app.services.collage_service import CollageService
+
 router = APIRouter()
 repo = VideosRepository()
+
+#Not sure which directory for rendering videos from server folder
+#app.mount("/media", StaticFiles(directory="media"), name="media")
 
 USE_REMOTE = os.getenv("USE_REMOTE_STORAGE", "false") == "true"
 REMOTE_API = os.getenv("REMOTE_API_URL", "")
@@ -60,6 +66,25 @@ async def upload_video(
     }
 
 
-@router.get("/videos/{collage_id}")
-def get_videos(collage_id: int):
-    return repo.get_videos(collage_id)
+@router.post("/generate-video")
+def generate_video(
+    images: list[UploadFile] = File(...),
+):
+    #next sprint - images validation
+
+    try:
+        saved_images_paths = ImageService.save_uploaded_images(images)
+    except Exception as e:
+        return {"error": f"Failed step 1 - save images: {str(e)}"}
+
+    try:
+        collage_path = CollageService.create_collage_from_images(saved_images_paths)
+    except Exception as e:
+        return {"error": f"Failed step 2 - create collage: {str(e)}"}
+
+    try:
+        video_url = VideoService.create_video_from_collage(collage_path)
+    except Exception as e:
+        return {"error": f"Failed step 3 - create video: {str(e)}"}
+
+    return {"video_url": video_url}

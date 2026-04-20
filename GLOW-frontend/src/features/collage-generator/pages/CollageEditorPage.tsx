@@ -1,10 +1,25 @@
+import { useLocation } from "react-router-dom";
 
 export default function CollageEditorPage() {
+    const location = useLocation();
+    const videoUrl = location.state?.videoUrl;
+
     return (
         <div>
             <h2>Collage Editor</h2>
-            <p>Here you can edit your collage by arranging the images and applying various effects.</p>
-            {/* Collage editing tools will go here */}
+            
+            {videoUrl ? (
+                <div>
+                    <h3>Generated Video:</h3>
+                    <video 
+                    src={videoUrl}
+                    controls
+                    className="w-50 h-auto"
+                    />
+                </div>
+            ) : (
+                <p>No video available.</p>
+            )}
         </div>
     );
 }
