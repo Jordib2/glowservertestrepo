@@ -94,7 +94,7 @@ export default function ImagesUploadPage() {
 
     setGenerateMessage(`Video generated and stored successfully.`);
     navigate("/collage-editor", { state: { videoUrl: video_url } });
-    
+
   } catch (error) {
     setGenerateMessage("Failed to generate video. Try again.");
   } finally {

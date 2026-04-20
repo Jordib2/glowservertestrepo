@@ -33,8 +33,8 @@ class VideoService:
         image_width, image_height = image.size
         print(f"Collage dimensions: {image_width}x{image_height}")
 
-        video_width = 1920
-        video_height = 1080
+        video_width = 800
+        video_height = 720
 
         #resize collage to fit video height while maintaining aspect ratio
         scale = video_height / image_height
@@ -50,7 +50,7 @@ class VideoService:
         collage_array = cv2.cvtColor(collage_array, cv2.COLOR_RGB2BGR)
 
         fps = 30
-        duration_seconds = 30
+        duration_seconds = 8
         total_frames = fps * duration_seconds
 
         max_x = new_width - video_width
