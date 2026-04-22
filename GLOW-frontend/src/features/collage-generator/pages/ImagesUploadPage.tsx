@@ -1,19 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_URL = (() => {
-  const hostname = window.location.hostname;
-
-  if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return "http://127.0.0.1:8000";
-  }
-
-  if (hostname.startsWith("192.168.")) {
-    return `http://${hostname}:8000`;
-  }
-
-  return "https://glow2026.duckdns.org";
-})();
+import { generateVideo } from "../../../shared/services/videoService";
 
 interface ImageItem {
   file: File;
@@ -97,48 +84,34 @@ export default function ImagesUploadPage() {
   setGenerateMessage("Creating collage...");
 
   try {
-    const collageResp = await fetch(`${API_URL}/api/collages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const formData = new FormData();
+
+    images.forEach((image) => {
+      formData.append("images", image.file);
     });
 
-    if (!collageResp.ok) throw new Error("Failed to create collage");
-    const collageData = await collageResp.json();
-    const collageId = collageData.id;
+    const video_url = await generateVideo(formData);
 
-    await Promise.all(
-      images.map(async (image) => {
-        const formData = new FormData();
-        formData.append("collage_id", collageId.toString());
-        formData.append("file", image.file);
+    setGenerateMessage(`Video generated and stored successfully.`);
+    navigate("/collage-editor", { state: { videoUrl: video_url } });
 
-        const imageResp = await fetch(`${API_URL}/api/images`, {
-          method: "POST",
-          body: formData,
-        });
-        if (!imageResp.ok) throw new Error("Failed to save image");
-      })
-    );
-
-    setGenerateMessage(`Collage ${collageId} generated and stored successfully.`);
-    navigate("/review-images");
   } catch (error) {
-    setGenerateMessage("Failed to generate collage. Try again.");
+    setGenerateMessage("Failed to generate video. Try again.");
   } finally {
     setIsGenerating(false);
   }
 };
 
   return (
-    <div>
-      <h2>Upload your images</h2>
-      <p>Here you can upload the images you want to use for your collage.</p>
+    <div className="mb-5">
+      <h2>Begin your story</h2>
+      <p className="mt-5">Upload the images you want to use for your collage.</p>
 
       <div style={{ marginBottom: "1.5rem" }}>
         <button
           type="button"
           onClick={openGallery}
-          style={{ padding: "0.75rem 1rem" }}
+          className="mt-7 bg-gray-100 border p-2 rounded"
         >
           Upload a cutout
         </button>
@@ -159,17 +132,13 @@ export default function ImagesUploadPage() {
           {images.map((image) => (
             <div
               key={image.id}
-              style={{
-                marginBottom: "1.5rem",
-                borderBottom: "1px solid #eee",
-                paddingBottom: "1.5rem",
-              }}
+              className="p-5 mb-5 border rounded-lg"
             >
-              <div style={{ marginBottom: "1rem" }}>
+              <div className="p-5 flex justify-center">
                 <img
                   src={image.preview}
                   alt={image.file.name}
-                  style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
+                  className="h-30 w-auto rounded-lg"
                 />
               </div>
               <div
@@ -199,7 +168,7 @@ export default function ImagesUploadPage() {
                     onClick={() => openReview(image.id)}
                     style={{
                       padding: "0.5rem 1rem",
-                      backgroundColor: "#007bff",
+                      backgroundColor: "#7700ff",
                       color: "white",
                       border: "none",
                       borderRadius: "4px",
@@ -318,8 +287,9 @@ export default function ImagesUploadPage() {
                   fontSize: "1rem",
                 }}
               >
-                {isGenerating ? "Generating..." : "Generate"}
+                {isGenerating ? "Generating..." : "Start the magic!"}
               </button>
+              <h5>Clicking this button will generate a collage video.</h5>
               {generateMessage && (
                 <p style={{ marginTop: "1rem", color: "#155724" }}>
                   {generateMessage}

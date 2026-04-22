@@ -1,6 +1,6 @@
 
 from app.persistence.repositories.collage_repository import CollageRepository
-from app.persistence.repositories.video_repository import VideoRepository
+from app.persistence.repositories.videos_repository import VideosRepository
 
 import os
 import uuid
@@ -12,21 +12,19 @@ import cv2
 
 class VideoService:
     def __init__(self):
-        self.video_repo = VideoRepository()
+        self.video_repo = VideosRepository()
         self.collage_repo = CollageRepository()
 
         self.base_media_dir = os.getenv("MEDIA_DIR", "media")
         self.videos_subdir = "videos"
         self.video_dir = Path(self.base_media_dir) / self.videos_subdir
 
-    async def create_video_from_collage(self, collage_id: int) -> dict:
-        #get collage and open as image
-        collage = self.collage_repo.get_collage(collage_id)
-        if not collage:
-            raise ValueError(f"Collage with id {collage_id} not found")
+    def generate_video(self, collage_url: str, collage_id: int) -> dict:
+        # Convert URL to local path
+        relative_path = collage_url.split('/media/')[1]  # e.g., collages/filename
+        collage_path = os.path.join(self.base_media_dir, relative_path)
 
-        collage_path = collage["collage_path"] if isinstance(collage, dict) else collage.collage_path
-        if not collage_path or not os.path.exists(collage_path):
+        if not os.path.exists(collage_path):
             raise ValueError(f"Collage file not found at path: {collage_path}")
 
         self.video_dir.mkdir(parents=True, exist_ok=True)
@@ -35,8 +33,8 @@ class VideoService:
         image_width, image_height = image.size
         print(f"Collage dimensions: {image_width}x{image_height}")
 
-        video_width = 1920
-        video_height = 1080
+        video_width = 800
+        video_height = 720
 
         #resize collage to fit video height while maintaining aspect ratio
         scale = video_height / image_height
@@ -52,7 +50,7 @@ class VideoService:
         collage_array = cv2.cvtColor(collage_array, cv2.COLOR_RGB2BGR)
 
         fps = 30
-        duration_seconds = 30
+        duration_seconds = 8
         total_frames = fps * duration_seconds
 
         max_x = new_width - video_width
@@ -90,9 +88,12 @@ class VideoService:
 
         saved_video = self.video_repo.save_video(collage_id, str(relative_video_path))
 
+        BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
+        video_url = f"{BASE_URL}/media/{relative_video_path}"
+
         return {
             "message": f"Video created successfully for collage {collage_id}",
             "video_id": saved_video["id"],
             "collage_id": collage_id,
-            "video_path": saved_video["video_path"]
+            "video_url": video_url
         }

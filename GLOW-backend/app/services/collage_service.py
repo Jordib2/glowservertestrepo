@@ -4,9 +4,11 @@ from typing import List
 from PIL import Image
 import uuid
 import random
-
+from app.persistence.repositories.collage_repository import CollageRepository
 
 class CollageService:
+    def __init__(self):
+        self.collage_repo = CollageRepository()
 
     def _resize_and_fit(self, img: Image.Image, size: tuple) -> Image.Image:
         img = img.copy()
@@ -17,13 +19,16 @@ class CollageService:
         canvas.paste(img, (x, y), img if img.mode == "RGBA" else None)
         return canvas
 
-    def _generate_tapestry(
-        self,
-        image_paths: List[str],
-        collage_id: int,
-    ) -> str:
+    def generate_collage(self, collage_id: int, image_urls: List[str]) -> str:
+        # Convert URLs to local paths
+        base_media_dir = os.getenv("MEDIA_DIR", "media")
+        image_paths = []
+        for url in image_urls:
+            # Assuming URL is like http://127.0.0.1:8000/media/images/filename
+            relative_path = url.split('/media/')[1]  # e.g., images/filename
+            local_path = os.path.join(base_media_dir, relative_path)
+            image_paths.append(local_path)
 
-        
         source_images = []
         for path in image_paths:
             if not os.path.exists(path):
@@ -39,7 +44,6 @@ class CollageService:
         if not source_images:
             raise ValueError("No valid images found")
 
-       
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         background_path = os.path.join(base_dir, "assets", "collage_background.png")
 
@@ -49,32 +53,26 @@ class CollageService:
 
         print(f"Canvas: {canvas_w}x{canvas_h}")
 
-        
-        COLS = 8   
-        GAP  = 4     
+        COLS = 8
+        GAP = 4
 
-      
         aspect_ratio = canvas_w / canvas_h
         ROWS = round(COLS / aspect_ratio)
         ROWS = max(1, ROWS)
 
-   
         TILE_W = canvas_w // COLS
         TILE_H = canvas_h // ROWS
 
-        
         IMG_W = TILE_W - GAP * 2
         IMG_H = TILE_H - GAP * 2
 
-        
         IMG_SIZE = min(IMG_W, IMG_H)
         IMG_SIZE = max(1, IMG_SIZE)
 
-        ANGLE = 10  
+        ANGLE = 10
 
         print(f"Grid: {COLS} cols x {ROWS} rows, tile={TILE_W}x{TILE_H}, img={IMG_SIZE}x{IMG_SIZE}, gap={GAP}px")
 
-       
         img_cycle = 0
         total_placed = 0
         random.shuffle(source_images)
@@ -95,7 +93,6 @@ class CollageService:
                 cell_x = col * TILE_W
                 cell_y = row * TILE_H
 
-               
                 offset_x = (TILE_W - tile.width) // 2
                 offset_y = (TILE_H - tile.height) // 2
 
@@ -107,15 +104,12 @@ class CollageService:
 
         print(f"Placed {total_placed} tiles total")
 
-      
-        output_dir = os.path.join(base_dir, "../../collages")
-        os.makedirs(output_dir, exist_ok=True)
+        # Save to temp first, then repo will move it
+        temp_path = f"/tmp/collage_{collage_id}_{uuid.uuid4().hex}.png"
+        collage.save(temp_path, "PNG")
+        print(f"Saved temp: {temp_path}")
 
-        output_path = os.path.join(
-            output_dir,
-            f"collage_{uuid.uuid4().hex}.png"
-        )
+        # Save via repo
+        collage_url = self.collage_repo.save_collage_file(collage_id, temp_path)
 
-        collage.save(output_path, "PNG")
-        print(f"Saved: {output_path}")
-        return output_path
+        return collage_url
