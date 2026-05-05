@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.controllers.images_controller import router as images_router
 from app.api.controllers.collages_controller import router as collages_router
 from app.api.controllers.videos_controller import router as videos_router
+from app.api.controllers.schools_controller import router as schools_router
 from app.core.db import get_db
 
 app = FastAPI(title="GLOW API")
@@ -35,6 +36,7 @@ app.add_middleware(
 app.include_router(images_router, prefix="/api")
 app.include_router(collages_router, prefix="/api")
 app.include_router(videos_router, prefix="/api")
+app.include_router(schools_router, prefix="/api")
 
 # ✅ THIS IS THE FIXED LINE 👇 (USE MEDIA_DIR, NOT HARDCODED PATH)
 MEDIA_DIR = os.getenv("MEDIA_DIR", "media")
