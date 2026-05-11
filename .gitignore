@@ -27,3 +27,4 @@ GLOW-backend/.mypy_cache
 collages
 GLOW-backend/app/pictures
 GLOW-backend/app/persistence/test_collage.py
+
