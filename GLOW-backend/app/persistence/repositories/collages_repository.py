@@ -30,4 +30,3 @@ class CollagesRepository:
         db.close()
 
         return result
-

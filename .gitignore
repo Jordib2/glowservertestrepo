@@ -17,6 +17,7 @@ GLOW-backend/.pytest_cache
 GLOW-backend/.mypy_cache
 GLOW-backend/media/images/
 GLOW-backend/media/videos/
+GLOW-backend/media
 
 # Python compiled
 *.pyc

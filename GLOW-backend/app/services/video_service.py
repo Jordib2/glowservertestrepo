@@ -50,7 +50,7 @@ class VideoService:
         collage_array = cv2.cvtColor(collage_array, cv2.COLOR_RGB2BGR)
 
         fps = 30
-        duration_seconds = 8
+        duration_seconds = 10
         total_frames = fps * duration_seconds
 
         max_x = new_width - video_width
