@@ -5,8 +5,6 @@ import ImagesUploadPage from "../features/collage-generator/pages/ImagesUploadPa
 import ImagesReviewPage from "../features/collage-generator/pages/ImagesReviewPage.tsx";
 import CollageEditorPage from "../features/collage-generator/pages/CollageEditorPage.tsx";
 import CollageReviewExportPage from "../features/collage-generator/pages/CollageReviewExportPage.tsx";
-import Homepage from "../features/collage-generator/pages/Homepage.tsx";
-
 
 export const router = createBrowserRouter([
     {
@@ -30,7 +28,7 @@ export const router = createBrowserRouter([
                 element: <CollageReviewExportPage />
             },
             {
-                path: "Image-upload",
+                path: "image-upload",
                 element: <ImagesUploadPage /> 
             }
         ]

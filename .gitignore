@@ -15,6 +15,9 @@ GLOW-backend/venv
 GLOW-backend/__pycache__
 GLOW-backend/.pytest_cache
 GLOW-backend/.mypy_cache
+GLOW-backend/media/images/
+GLOW-backend/media/videos/
+GLOW-backend/media
 
 # Python compiled
 *.pyc
@@ -23,3 +26,8 @@ GLOW-backend/.mypy_cache
 # IDE
 .vscode
 .idea
+
+collages
+GLOW-backend/app/pictures
+GLOW-backend/app/persistence/test_collage.py
+
