@@ -206,7 +206,7 @@ export default function ImagesUploadPage() {
                   alt={image.file.name}
                   className="h-20 w-20 object-cover rounded-lg flex-shrink-0"
                 />
-                <p className="font-bold text-sm md:text-base text-slate-700 break-all">
+                <p className="font-bold text-md md:text-base text-slate-700 break-all">
                   {image.file.name}
                 </p>
               </div>
