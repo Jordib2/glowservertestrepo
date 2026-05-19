@@ -36,14 +36,14 @@ function rgbToHsl({ r, g, b }: RGB): HSL {
 function classifyPixel(rgb: RGB): 'white' | 'black' | 'shadow' | 'problem' {
     const { s, l } = rgbToHsl(rgb);
 
-    //lightness above 82% and low saturation is white (background)
-    if (l > 0.82 && s < 0.1) return 'white';
+    //lightness above 70% and low saturation is white (background)
+    if (l > 0.70 && s < 0.30) return 'white';
 
     //low lightness is black (cutout)
-    if (l < 0.1) return 'black';
+    if (l < 0.25) return 'black';
 
     //medium lightness and low saturation is shadow
-    if (l > 0.50 && s < 0.12) return 'shadow';
+    if (l > 0.40 && s < 0.25) return 'shadow';
 
     //anything else is a problem
     return 'problem';
@@ -104,12 +104,9 @@ export async function validateCutout(file: File): Promise<ValidationResult> {
             const cornerLabels = ['top left', 'top right', 'bottom left', 'bottom right'];
 
             corners.forEach((corner, i) => {
-                const nonWhite = corner.filter(px => classifyPixel(px) !== 'white');
-                const ratio = nonWhite.length / corner.length;
-
-                //if more than 25% of corner pixels are not white, it's a problem
-                if (ratio > 0.25) {
-                    issues.push(`Corner ${cornerLabels[i]} is not white - check background`);
+                const avgBrightness = corner.reduce((sum, px) => sum + (px.r + px.g + px.b) / 3, 0) / corner.length;
+                if (avgBrightness < 100) {
+                    issues.push(`Corner ${cornerLabels[i]} is not white — check background`);
                 }
             });
 
@@ -131,22 +128,22 @@ export async function validateCutout(file: File): Promise<ValidationResult> {
             const shadowRatio = shadowCount / total;
             const blackRatio = blackCount / total;
 
-            if (problemRatio > 0.03) {
+            if (problemRatio > 0.10) {
                 issues.push('Image contains unexpected colors or mid-tones')
             }
-            if (shadowRatio > 0.20) {
+            if (shadowRatio > 0.35) {
                 issues.push('Image contains too much shadow - try better lighting');
             }
             if (blackRatio < 0.02) {
                 issues.push('No clear black cutout detected - make sure the cutout is visible');
             }
-            if (blackRatio > 0.70) {
+            if (blackRatio > 0.75) {
                 issues.push('Image contains too much black - check photo framing');
             }
 
             //Check 3: Shine on cutout
             let shineCount = 0;
-            const shineCheckLimit = 500; 
+            const shineCheckLimit = 500;
             const step = Math.max(1, Math.floor(total / shineCheckLimit)); //check every 500px
 
             for (let i = 0; i < total; i += step) {
@@ -169,14 +166,14 @@ export async function validateCutout(file: File): Promise<ValidationResult> {
                 if (darkNeighbors >= 1 && brightNeighbors >= 1) shineCount++;
             }
 
-            if (shineCount > 15) {
+            if (shineCount > 40) {
                 issues.push('Silhouette may have shine or glare - try adjusting lighting or angle');
             }
 
-            const deductions = 
-            issues.length * 20 +
-            Math.min(30, problemRatio * 500) +
-            Math.min(15, shadowRatio * 50);
+            const deductions =
+                issues.length * 20 +
+                Math.min(30, problemRatio * 500) +
+                Math.min(15, shadowRatio * 50);
 
             const score = Math.max(0, 100 - deductions);
 
