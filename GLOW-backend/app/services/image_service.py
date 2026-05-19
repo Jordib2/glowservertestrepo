@@ -4,22 +4,24 @@ import asyncio
 from typing import List
 from fastapi import UploadFile
 
-# ✅ Correctly import your repositories
 from app.persistence.repositories.collage_repository import CollageRepository
 from app.persistence.repositories.images_repository import ImagesRepository
 
-# ✅ Import the SINGLETON processor instance, not the class
 from app.services.image_processor import global_image_processor
 
 # Grab the same MEDIA_DIR you defined in main.py
 MEDIA_DIR = os.getenv("MEDIA_DIR", "media")
-os.makedirs(MEDIA_DIR, exist_ok=True) # Ensure it exists here too, just to be safe
+os.makedirs(MEDIA_DIR, exist_ok=True)
+
+# Optional SVG directory
+SVG_DIR = os.path.join(MEDIA_DIR, "svg")
+os.makedirs(SVG_DIR, exist_ok=True)
 
 class ImageService:
     def __init__(self):
         self.collage_repo = CollageRepository()
         self.images_repo = ImagesRepository()
-        self.processor = global_image_processor # Reference the global one!
+        self.processor = global_image_processor
 
     async def process_images(
         self,
@@ -48,6 +50,22 @@ class ImageService:
                 # Save directly to the media directory
                 with open(save_path, "wb") as f:
                     f.write(processed_bytes)
+                
+                # Optional: Also generate SVG
+                try:
+                    svg_string = await asyncio.to_thread(
+                        self.processor.generate_svg,
+                        image_bytes,
+                        threshold
+                    )
+                    
+                    svg_filename = f"{uuid.uuid4().hex}.svg"
+                    svg_path = os.path.join(SVG_DIR, svg_filename)
+                    
+                    with open(svg_path, "w", encoding="utf-8") as f:
+                        f.write(svg_string)
+                except Exception as e:
+                    print(f"SVG generation failed (non-critical): {e}")
             else:
                 with open(save_path, "wb") as f:
                     f.write(image_bytes)
