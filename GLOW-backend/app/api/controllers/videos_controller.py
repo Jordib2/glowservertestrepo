@@ -78,7 +78,12 @@ async def upload_video(
 async def generate_video(images: List[UploadFile] = File(...)):
     try:
         image_service = ImageService()
-        result = await image_service.process_images(images)
+        # Explicitly pass threshold parameter
+        result = await image_service.process_images(
+            images=images,
+            apply_cutout=True,
+            threshold=50  # ← EXPLICITLY PASS THIS
+        )
         collage_id = result["collage_id"]
         image_paths = result["image_paths"]
 
