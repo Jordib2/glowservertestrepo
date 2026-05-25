@@ -17,7 +17,10 @@ GLOW-backend/.pytest_cache
 GLOW-backend/.mypy_cache
 GLOW-backend/media/images/
 GLOW-backend/media/videos/
+GLOW-backend/media/png/
+GLOW-backend/media/svg/
 GLOW-backend/media
+GLOW-backend/debug_*.png
 
 # Python compiled
 *.pyc
@@ -30,4 +33,3 @@ GLOW-backend/media
 collages
 GLOW-backend/app/pictures
 GLOW-backend/app/persistence/test_collage.py
-
