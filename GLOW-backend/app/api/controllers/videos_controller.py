@@ -75,7 +75,7 @@ async def upload_video(
 
 @router.post("/generate-video")
 @limiter.limit("5/minute")
-async def generate_video(images: List[UploadFile] = File(...)):
+async def generate_video(request: Request, images: List[UploadFile] = File(...)):
     try:
         image_service = ImageService()
         # Explicitly pass threshold parameter
