@@ -31,7 +31,7 @@ class ImageProcessor:
             cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
         )
 
-        # 5. Find contours for outline drawing
+        # 5. Find contours for filling
         contours, _ = cv2.findContours(
             mask,
             cv2.RETR_EXTERNAL,
@@ -40,7 +40,7 @@ class ImageProcessor:
 
         h, w = mask.shape
         
-        # 6. Build final PNG with white outlines on black background
+        # 6. Build final PNG with white filled shapes on transparent background
         rgba = np.zeros((h, w, 4), dtype=np.uint8)
         
         for contour in contours:
@@ -48,13 +48,11 @@ class ImageProcessor:
             epsilon = 0.002 * cv2.arcLength(contour, True)
             smooth = cv2.approxPolyDP(contour, epsilon, True)
             
-            # Draw white outline
-            cv2.drawContours(
+            # FILL the contour with white
+            cv2.fillPoly(
                 rgba,
                 [smooth],
-                -1,
-                (255, 255, 255, 255),
-                thickness=15
+                (255, 255, 255, 255)
             )
 
         # 7. Encode and return
@@ -69,7 +67,6 @@ class ImageProcessor:
         threshold: int = 50
     ) -> str:
         """Optional: Generate SVG vector alongside PNG"""
-        # Same processing to get contours
         nparr = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -90,7 +87,6 @@ class ImageProcessor:
         
         h, w = mask.shape
         
-        # Create SVG
         svg_output = io.StringIO()
         dwg = svgwrite.Drawing(size=(w, h))
         
@@ -107,9 +103,9 @@ class ImageProcessor:
                 dwg.add(
                     dwg.polygon(
                         points=points,
-                        fill="none",
+                        fill="white",     
                         stroke="white",
-                        stroke_width=15
+                        stroke_width=2
                     )
                 )
         
