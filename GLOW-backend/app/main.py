@@ -28,8 +28,8 @@ app.add_middleware(
         "https://glow2026.duckdns.org"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # ✅ routes

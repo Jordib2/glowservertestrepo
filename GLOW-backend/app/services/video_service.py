@@ -5,6 +5,7 @@ from app.persistence.repositories.videos_repository import VideosRepository
 import os
 import uuid
 from pathlib import Path
+import subprocess
 
 from PIL import Image
 import numpy as np
@@ -33,8 +34,8 @@ class VideoService:
         image_width, image_height = image.size
         print(f"Collage dimensions: {image_width}x{image_height}")
 
-        video_width = 800
-        video_height = 720
+        video_width = 1900
+        video_height = 1200
 
         #resize collage to fit video height while maintaining aspect ratio
         scale = video_height / image_height
@@ -59,17 +60,18 @@ class VideoService:
         #create file path for video output
         filename = f"{uuid.uuid4()}_collage_{collage_id}.mp4"
         absolute_output_path = self.video_dir / filename
+        temp_path = self.video_dir / f"temp_{filename}"
 
         #create mp4 writer
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         video_writer = cv2.VideoWriter(
-            str(absolute_output_path), 
+            str(temp_path), 
             fourcc, 
             fps, 
             (video_width, video_height))
         
         if not video_writer.isOpened():
-            raise RuntimeError(f"Failed to create video writer for path: {absolute_output_path}")
+            raise RuntimeError(f"Failed to create video writer for path: {temp_path}")
 
         for i in range(total_frames):
             x = int(i * step_x)
@@ -82,6 +84,23 @@ class VideoService:
             video_writer.write(frame)
 
         video_writer.release()
+
+        #re-encoding with ffmpeg to ensure compatibility and reduce file size
+        try:
+            subprocess.run([
+                "ffmpeg",
+                "-y",
+                "-i", str(temp_path),
+                "-vcodec", "libx264",
+                "-pix_fmt", "yuv420p",
+                "-movflags", "+faststart",
+                str(absolute_output_path)
+            ], check=True)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"FFmpeg failed: {e}")
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
         #save video path to db associated with collage_id
         relative_video_path = f"{self.videos_subdir}/{filename}"
