@@ -10,6 +10,9 @@ import os
 import shutil
 import uuid
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
 router = APIRouter()
 
 # ✅ Needed for local save
@@ -21,6 +24,7 @@ REMOTE_API = os.getenv("REMOTE_API_URL", "")
 BASE_DIR = os.getenv("MEDIA_DIR", "media")
 UPLOAD_DIR = os.path.join(BASE_DIR, "videos")
 
+limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/upload/video")
 async def upload_video(
@@ -70,6 +74,7 @@ async def upload_video(
 
 
 @router.post("/generate-video")
+@limiter.limit("5/minute")
 async def generate_video(images: List[UploadFile] = File(...)):
     try:
         image_service = ImageService()
