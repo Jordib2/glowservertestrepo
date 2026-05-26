@@ -31,29 +31,21 @@ class ImageProcessor:
             cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
         )
 
-        # 5. Find contours for filling
-        contours, _ = cv2.findContours(
-            mask,
-            cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_SIMPLE
-        )
+        # Clean up specks and fill tiny holes without losing detail
+        kernel = np.ones((2, 2), np.uint8)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
+        # Soften the edge for anti-aliasing — this is the big quality win
+        mask = cv2.GaussianBlur(mask, (3, 3), 0)
+
+        # Build RGBA where alpha follows the (now soft) mask
         h, w = mask.shape
-        
-        # 6. Build final PNG with white filled shapes on transparent background
         rgba = np.zeros((h, w, 4), dtype=np.uint8)
-        
-        for contour in contours:
-            # Smooth contour
-            epsilon = 0.002 * cv2.arcLength(contour, True)
-            smooth = cv2.approxPolyDP(contour, epsilon, True)
-            
-            # FILL the contour with white
-            cv2.fillPoly(
-                rgba,
-                [smooth],
-                (255, 255, 255, 255)
-            )
+        rgba[..., 0] = 255  # R
+        rgba[..., 1] = 255  # G
+        rgba[..., 2] = 255  # B
+        rgba[..., 3] = mask  # A — soft edges, not just 0/255
 
         # 7. Encode and return
         result = Image.fromarray(rgba, mode="RGBA")

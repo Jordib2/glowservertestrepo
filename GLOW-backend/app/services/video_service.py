@@ -74,11 +74,11 @@ class VideoService:
         for s in sprites:
             img = Image.open(s["image_path"]).convert("RGBA")
             img.thumbnail((s["size"], s["size"]), Image.LANCZOS)
-            new_size = (
-                max(1, int(img.width  * self._video_scale)),
-                max(1, int(img.height * self._video_scale)),
-            )
-            s["_image"] = img.resize(new_size, Image.LANCZOS)
+            target = max(1, int(s["size"] * self._video_scale))
+            scale = target / max(img.width, img.height)
+            final_size = (max(1, int(img.width * scale)), max(1, int(img.height * scale)))
+            
+            s["_image"] = img.resize(final_size, Image.LANCZOS)
             s["_cx"] = s["center_x"] * self._video_scale
             s["_cy"] = s["center_y"] * self._video_scale
 
