@@ -5,6 +5,8 @@ import ImagesUploadPage from "../features/collage-generator/pages/ImagesUploadPa
 import ImagesReviewPage from "../features/collage-generator/pages/ImagesReviewPage.tsx";
 import CollageEditorPage from "../features/collage-generator/pages/CollageEditorPage.tsx";
 import CollageReviewExportPage from "../features/collage-generator/pages/CollageReviewExportPage.tsx";
+import UserRoleSelection from "../features/accounts/UserRoleSelection.tsx";
+import UserLogin from "../features/accounts/UserLogin.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -13,7 +15,7 @@ export const router = createBrowserRouter([
         children: [
             { 
                 index: true,
-                element: <ImagesUploadPage /> 
+                element: <UserRoleSelection /> 
             },
             {
                 path: "review-images",
@@ -30,6 +32,14 @@ export const router = createBrowserRouter([
             {
                 path: "image-upload",
                 element: <ImagesUploadPage /> 
+            },
+            {
+                path: "user-role-selection",
+                element: <UserRoleSelection />
+            },
+            {
+                path: "user-login",
+                element: <UserLogin />
             }
         ]
     }
