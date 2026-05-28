@@ -1,3 +1,3 @@
-type Role = "Teacher" | "Child";
+type Role = "Teacher" | "Student";
 
 export type { Role };

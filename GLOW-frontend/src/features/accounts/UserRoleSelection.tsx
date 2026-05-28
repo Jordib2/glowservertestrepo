@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Role } from "../../shared/types/role.ts";
 
@@ -6,76 +6,76 @@ interface UserRoleSelectionProps {
     onChange?: (role: Role | null) => void;
 }
 
+const imageFor = (role: Role) =>
+    role === "Teacher" ? "/roles/teacher-role.png" : "/roles/student-role.png";
+
 export default function UserRoleSelection({ onChange }: UserRoleSelectionProps) {
     const [selected, setSelected] = useState<Role | null>(null);
-    const roles: Role[] = ["Teacher", "Child"];
+    const roles: Role[] = ["Teacher", "Student"];
     const navigate = useNavigate();
 
     const select = (role: Role) => {
-        const next = selected === role ? null : role;
-        setSelected(next);
-        onChange?.(next);
+        if (selected) return;
+        setSelected(role);
+        onChange?.(role);
     };
 
-    return (
-        <div className="flex flex-col items-center p-8  bg-[url('../../../public/login-screen-bg.png')] bg-cover bg-center min-h-screen">
+    useEffect(() => {
+        if (!selected) return;
+        sessionStorage.setItem("role", selected);
+        const timer = setTimeout(() => navigate("/user-login"), 1000);
+        return () => clearTimeout(timer);
+    }, [selected, navigate]);
 
-            <div className="flex flex-col items-center gap-4">
-                <h1 className="text-5xl font-bold text-white shadow-lg">CONNECT</h1>
-                <p className="text-gray-600 text-white">Turn your class into one endless story</p>
+    return (
+        <div className="flex flex-col items-center justify-between min-h-screen bg-[url('../../../public/login-screen-bg.png')] bg-cover bg-center">
+            <div className="flex flex-col items-center gap-2 text-center">
+                <h1 className="text-5xl font-bold tracking-wide text-white drop-shadow-[0_2px_12px_rgba(255,154,60,0.45)] [text-shadow:_0_0_8px_rgba(0,0,0,0.5)]">
+                    CONNECT
+                </h1>
+                <img src="/vector.png" className="mt-[-1.5rem]" />
+                <p className="font-bold text-white/90 text-xl max-w-md drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+                    Turn your class into one endless story
+                </p>
             </div>
 
-            <div className="flex flex-col items-center gap-4 w-full mt-auto">
-                <h2 className="text-2xl font-semibold mt-20 text-white">Select Your Role</h2>
+            <div className="flex flex-col items-center w-full max-w-md gap-6">
+                <h2 className="mt-6 text-2xl font-semibold tracking-wide text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+                    Select Your Role
+                </h2>
 
-                <div className="flex flex-col gap-3 w-full max-w-md">
+                <div className="flex flex-col items-center w-full gap-3">
                     {roles.map((role) => {
-                        const isChecked = selected === role;
+                        const isSelected = selected === role;
+                        const dimmed = selected !== null && !isSelected;
                         return (
                             <button
                                 key={role}
                                 type="button"
                                 onClick={() => select(role)}
-                                className="flex items-center gap-3 p-3 rounded transition"
+                                disabled={selected !== null}
+                                aria-pressed={isSelected}
+                                aria-label={`Select ${role} role`}
+                                className={[
+                                    "w-full transition-all duration-500 ease-out focus:outline-none",
+                                    isSelected ? "scale-105" : "hover:scale-[1.03]",
+                                    dimmed ? "opacity-40 saturate-50" : "opacity-100",
+                                ].join(" ")}
                             >
-                                <span
-                                    className={`w-6 h-6 border-2 border-white rounded flex items-center justify-center transition ${isChecked ? "border-blue-500" : "border-gray-400"
-                                        }`}
-                                >
-                                    {isChecked && (
-                                        <svg
-                                            className="w-4 h-4 text-white"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="3"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                    )}
-                                </span>
-                                <span className="text-white">{role}</span>
+                                <img
+                                    src={imageFor(role)}
+                                    alt={`${role} role`}
+                                    className={[
+                                        "w-full h-auto object-contain transition-all duration-500",
+                                        isSelected
+                                            ? "drop-shadow-[0_0_36px_rgba(232,179,90,0.9)]"
+                                            : "drop-shadow-[0_4px_14px_rgba(0,0,0,0.5)]",
+                                    ].join(" ")}
+                                />
                             </button>
                         );
                     })}
                 </div>
-
-                <button
-                    type="button"
-                    disabled={!selected}
-                    onClick={() => {
-                        if (selected) sessionStorage.setItem("role", selected);
-                        navigate("/user-login");
-                    }}
-                    className="w-full px-20 py-3 text-white rounded-[20px] text-base md:text-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
-                    style={{
-                        background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)"
-                    }}
-                >
-                    Continue
-                </button>
             </div>
         </div>
     );
