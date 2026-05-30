@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request, Depends
 from typing import List
 from app.services.image_service import ImageService
 from app.services.collage_service import CollageService
@@ -76,7 +76,7 @@ async def upload_video(
 
 @router.post("/generate-video")
 @limiter.limit("5/minute")
-async def generate_video(user: dict = Depends(require_roles("teacher", "admin")), images: List[UploadFile] = File(...)):
+async def generate_video(request: Request, user: dict = Depends(require_roles("teacher", "admin")), images: List[UploadFile] = File(...)):
     try:
         image_service = ImageService()
         # Explicitly pass threshold parameter

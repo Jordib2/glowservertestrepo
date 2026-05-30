@@ -1,11 +1,13 @@
 import type { Role } from "../../shared/types/role.ts";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { login } from "../../shared/services/accountService.ts";
 
 export default function UserLogin() {
     const role = sessionStorage.getItem("role") as Role | null;
     const navigate = useNavigate();
+    const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         if (!role) {
@@ -15,25 +17,29 @@ export default function UserLogin() {
 
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setError(null);
+        setSubmitting(true);
         const formData = new FormData(e.currentTarget);
         const payload = {
-            role,
+            role: role?.toLowerCase() ?? null,
             username: formData.get("username"),
             password: formData.get("password"),
         };
         try {
             const { access_token, user } = await login(payload);
-            console.log("Login successful, token:", access_token);
             sessionStorage.setItem("token", access_token);
             sessionStorage.setItem("user", JSON.stringify(user));
             navigate("/image-upload");
-        } catch (error) {
-            console.error("Login failed:", error);
+        } catch (err) {
+            console.error("Login failed:", err);
+            setError("Invalid credentials");
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
-        <div className="flex flex-col items-center p-8 bg-[url('../../../public/login-screen-bg.png')] bg-cover bg-center min-h-screen">
+        <div className="flex flex-col items-center p-8 bg-[url('../../../login-screen-bg.png')] bg-cover bg-center min-h-screen">
             <div className="flex flex-col items-center gap-4">
                 <h1 className="text-5xl font-bold tracking-wide text-white drop-shadow-[0_2px_12px_rgba(255,154,60,0.45)] [text-shadow:_0_0_8px_rgba(0,0,0,0.5)]">
                     CONNECT
@@ -58,12 +64,21 @@ export default function UserLogin() {
                         backgroundPosition: "center",
                     }}
                 >
-                    <div className="flex items-center gap-3">
+                    {error && (
+                        <div
+                            role="alert"
+                            className="mb-4 px-4 py-2 rounded-[14px] bg-red-900/50 border border-red-400/60 text-white text-center text-sm font-semibold drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                        >
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-1">
                         <label
                             htmlFor="username"
-                            className="w-32 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                            className="w-23 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
                         >
-                            Your Name
+                            Name
                         </label>
                         <input
                             id="username"
@@ -73,12 +88,12 @@ export default function UserLogin() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-3 mt-4">
+                    <div className="flex items-center gap-1 mt-4">
                         <label
                             htmlFor="password"
-                            className="w-32 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                            className="w-23 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
                         >
-                            Secret Word
+                            Secret Code
                         </label>
                         <input
                             id="password"
@@ -91,12 +106,13 @@ export default function UserLogin() {
 
                     <button
                         type="submit"
+                        disabled={submitting}
                         className="mt-8 mb-[-1rem] w-full px-20 py-3 text-white rounded-[20px] text-base md:text-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
                         style={{
                             background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
                         }}
                     >
-                        Step Into the Story
+                        {submitting ? "Opening the door…" : "Step Into the Story"}
                     </button>
                 </form>
             </div>

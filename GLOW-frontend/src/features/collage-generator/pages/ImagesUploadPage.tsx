@@ -7,6 +7,8 @@ import profileImage from "../../../assets/profilepic.png";
 import CameraCapture from "../../../shared/components/CameraCapture";
 import { validateCutout } from "../../../shared/lib/validateCutout";
 import type { ValidationResult } from "../../../shared/lib/validateCutout";
+import { useLogout } from "../../../shared/components/Logout";
+import { logout } from "../../../shared/services/accountService";
 
 interface ImageItem {
   file: File;
@@ -121,6 +123,8 @@ export default function ImagesUploadPage() {
     }
   };
 
+  const handleLogout = useLogout();
+
   return (
     <div
       className="min-h-screen bg-cover bg-center p-4 md:p-8"
@@ -128,9 +132,15 @@ export default function ImagesUploadPage() {
     >
       <div className="w-full px-4 md:px-8">
         <div className="flex items-center justify-between mb-3">
-          <button className="text-white text-2xl md:text-4xl w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
-            ←
-          </button>
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2 rounded-[20px] text-white font-semibold transition hover:opacity-90"
+            style={{
+                background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
+            }}
+        >
+            Close the Book
+        </button>
           <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white overflow-hidden">
             <img src={profileImage} alt="Profile icon" className="w-full h-full object-cover" />
           </div>

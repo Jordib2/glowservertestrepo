@@ -7,11 +7,11 @@ interface UserRoleSelectionProps {
 }
 
 const imageFor = (role: Role) =>
-    role === "Teacher" ? "/roles/teacher-role.png" : "/roles/student-role.png";
+    role === "teacher" ? "/roles/teacher-role.png" : "/roles/student-role.png";
 
 export default function UserRoleSelection({ onChange }: UserRoleSelectionProps) {
     const [selected, setSelected] = useState<Role | null>(null);
-    const roles: Role[] = ["Teacher", "Student"];
+    const roles: Role[] = ["teacher", "student"];
     const navigate = useNavigate();
 
     const select = (role: Role) => {
@@ -28,7 +28,7 @@ export default function UserRoleSelection({ onChange }: UserRoleSelectionProps) 
     }, [selected, navigate]);
 
     return (
-        <div className="flex flex-col items-center justify-between min-h-screen bg-[url('../../../public/login-screen-bg.png')] bg-cover bg-center">
+        <div className="flex flex-col items-center justify-between min-h-screen bg-[url('../../../login-screen-bg.png')] bg-cover bg-center">
             <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-5xl font-bold tracking-wide text-white drop-shadow-[0_2px_12px_rgba(255,154,60,0.45)] [text-shadow:_0_0_8px_rgba(0,0,0,0.5)]">
                     CONNECT

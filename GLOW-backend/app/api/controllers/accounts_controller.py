@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field, field_validator
 from app.services.accounts_service import AccountsService
+from app.core.deps import get_current_user
 
 router = APIRouter()
 service = AccountsService()
@@ -8,13 +9,13 @@ service = AccountsService()
 class LoginIn(BaseModel):
     username: str
     password: str
-    role: str = Field(regex="^(teacher|student)$")
+    role: str = Field(pattern="^(teacher|student)$")
 
 class SignupIn(BaseModel):
     name: str = Field(min_length=2, max_length=50)
-    username: str = Field(min_length=3, max_length=30, regex="^[a-zA-Z0-9_]+$")
+    username: str = Field(min_length=3, max_length=30, pattern="^[a-zA-Z0-9_]+$")
     password: str = Field(min_length=6, max_length=100)
-    role: str = Field(regex="^(teacher|student)$")
+    role: str = Field(pattern="^(teacher|student)$")
 
     @field_validator("role")
     @classmethod
@@ -30,6 +31,11 @@ async def login(login_data: LoginIn):
         return service.login(role=login_data.role, username=login_data.username, password=login_data.password)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
+    
+@router.post("/logout", status_code=204)
+async def logout(user: dict = Depends(get_current_user)):
+    return None
+    
 
 
 @router.post("/signup")
