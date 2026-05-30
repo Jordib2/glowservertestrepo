@@ -13,6 +13,7 @@ from app.api.controllers.images_controller import router as images_router
 from app.api.controllers.collages_controller import router as collages_router
 from app.api.controllers.videos_controller import router as videos_router
 from app.api.controllers.schools_controller import router as schools_router
+from app.api.controllers.accounts_controller import router as accounts_router
 from app.core.db import get_db
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -40,6 +41,7 @@ app.add_middleware(
 )
 
 # ✅ routes
+app.include_router(accounts_router, prefix="/api")
 app.include_router(images_router, prefix="/api")
 app.include_router(collages_router, prefix="/api")
 app.include_router(videos_router, prefix="/api")

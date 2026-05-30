@@ -2,6 +2,7 @@ import { API_URL } from "./api";
 
 export async function generateVideo(images: FormData): Promise<string> {
     const res = await fetch(`${API_URL}/api/generate-video`, {
+        headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
         method: "POST",
         body: images,
     });

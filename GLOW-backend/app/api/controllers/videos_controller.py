@@ -4,6 +4,7 @@ from app.services.image_service import ImageService
 from app.services.collage_service import CollageService
 from app.services.video_service import VideoService
 from app.persistence.repositories.videos_repository import VideosRepository
+from app.core.deps import get_current_user, require_roles
 
 import requests
 import os
@@ -75,7 +76,7 @@ async def upload_video(
 
 @router.post("/generate-video")
 @limiter.limit("5/minute")
-async def generate_video(request: Request, images: List[UploadFile] = File(...)):
+async def generate_video(user: dict = Depends(require_roles("teacher", "admin")), images: List[UploadFile] = File(...)):
     try:
         image_service = ImageService()
         # Explicitly pass threshold parameter
@@ -110,3 +111,8 @@ async def generate_video(request: Request, images: List[UploadFile] = File(...))
     return {
         "video_url": video_result["video_url"]
     }
+
+
+@router.get("/me")
+async def me(user: dict = Depends(get_current_user)):
+    return user

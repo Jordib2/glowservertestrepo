@@ -22,9 +22,10 @@ export default function UserLogin() {
             password: formData.get("password"),
         };
         try {
-            const token = await login(payload);
-            console.log("Login successful, token:", token);
-            sessionStorage.setItem("token", token);
+            const { access_token, user } = await login(payload);
+            console.log("Login successful, token:", access_token);
+            sessionStorage.setItem("token", access_token);
+            sessionStorage.setItem("user", JSON.stringify(user));
             navigate("/image-upload");
         } catch (error) {
             console.error("Login failed:", error);
@@ -32,8 +33,8 @@ export default function UserLogin() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-between min-h-screen bg-[url('../../../public/login-screen-bg.png')] bg-cover bg-center">
-            <div className="flex flex-col items-center gap-2 text-center">
+        <div className="flex flex-col items-center p-8 bg-[url('../../../public/login-screen-bg.png')] bg-cover bg-center min-h-screen">
+            <div className="flex flex-col items-center gap-4">
                 <h1 className="text-5xl font-bold tracking-wide text-white drop-shadow-[0_2px_12px_rgba(255,154,60,0.45)] [text-shadow:_0_0_8px_rgba(0,0,0,0.5)]">
                     CONNECT
                 </h1>
@@ -43,40 +44,39 @@ export default function UserLogin() {
                 </p>
             </div>
 
-            {/* Parchment form */}
-            <div className="w-full max-w-sm mt-auto mb-8 px-5">
-                <div className="relative">
-                    {/* aged magic parchment behind the form */}
-                    <img
-                        src="/parchment.png"
-                        alt=""
-                        aria-hidden="true"
-                        className="absolute -inset-3 w-[calc(100%+1.5rem)] h-[calc(100%+1.5rem)] object-fill pointer-events-none select-none drop-shadow-[0_12px_30px_rgba(0,0,0,0.6)]"
-                    />
+            <div className="flex flex-col items-center w-full mt-auto bg-[#2a1a3a]/40 to-transparent py-10 px-6 rounded-[40px]">
+                <h2 className="mb-3 text-2xl font-semibold tracking-wide text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+                    Begin Your Tale
+                </h2>
 
-                    <form onSubmit={handleSubmit} className="relative z-10 px-9 py-9">
-                        <h2 className="mb-7 text-center text-2xl font-semibold tracking-wide text-[#4a3216]">
-                            {role === "Teacher" ? "Take up the lantern" : "Open the storybook"}
-                        </h2>
-
-                        {/* Username */}
+                <form
+                    onSubmit={handleSubmit}
+                    className="w-full max-w-md px-10 py-8 bg-no-repeat"
+                    style={{
+                        backgroundImage: "url('/form_panel.png')",
+                        backgroundSize: "100% 100%",
+                        backgroundPosition: "center",
+                    }}
+                >
+                    <div className="flex items-center gap-3">
                         <label
                             htmlFor="username"
-                            className="block mb-1 text-xs tracking-[0.22em] uppercase text-[#6b4f28]"
+                            className="w-32 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
                         >
-                            Name
+                            Your Name
                         </label>
                         <input
                             id="username"
                             name="username"
                             placeholder="Who seeks entry?"
-                            className="w-full mb-6 px-1 py-2 bg-transparent text-lg text-[#3a2a14] placeholder-[#8a apvalumas] placeholder-[#9a7a4c] border-b-2 border-[#8a6a38]/60 outline-none transition focus:border-[#7c4fa6] focus:shadow-[0_4px_14px_-6px_rgba(124,79,166,0.8)]"
+                            className="flex-1 px-4 py-2 rounded-[20px] bg-white/40 text-base md:text-lg text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
                         />
+                    </div>
 
-                        {/* Password */}
+                    <div className="flex items-center gap-3 mt-4">
                         <label
                             htmlFor="password"
-                            className="block mb-1 text-xs tracking-[0.22em] uppercase text-[#6b4f28]"
+                            className="w-32 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
                         >
                             Secret Word
                         </label>
@@ -85,23 +85,20 @@ export default function UserLogin() {
                             name="password"
                             type="password"
                             placeholder="••••••••"
-                            className="w-full mb-8 px-1 py-2 bg-transparent text-lg text-[#3a2a14] placeholder-[#9a7a4c] border-b-2 border-[#8a6a38]/60 outline-none transition focus:border-[#7c4fa6] focus:shadow-[0_4px_14px_-6px_rgba(124,79,166,0.8)]"
+                            className="flex-1 px-4 py-2 rounded-[20px] bg-white/40 text-base md:text-lg text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
                         />
+                    </div>
 
-                        <button
-                            type="submit"
-                            className="w-full py-3 rounded-[14px] text-base md:text-lg font-semibold tracking-wide text-amber-50 transition hover:shadow-[0_0_28px_rgba(124,79,166,0.6)] active:scale-[0.99] disabled:opacity-50"
-                            style={{
-                                background: "linear-gradient(135deg, #2e1746 0%, #5b2f86 55%, #7c4fa6 100%)",
-                                border: "1px solid rgba(247,221,154,0.55)",
-                                boxShadow:
-                                    "inset 0 1px 0 rgba(247,221,154,0.35), 0 6px 18px rgba(0,0,0,0.5)",
-                            }}
-                        >
-                            {role === "Teacher" ? "Enter as Teacher" : "Enter as Storyteller"}
-                        </button>
-                    </form>
-                </div>
+                    <button
+                        type="submit"
+                        className="mt-8 mb-[-1rem] w-full px-20 py-3 text-white rounded-[20px] text-base md:text-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
+                        style={{
+                            background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
+                        }}
+                    >
+                        Step Into the Story
+                    </button>
+                </form>
             </div>
         </div>
     );

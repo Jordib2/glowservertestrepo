@@ -6,7 +6,7 @@ interface LoginPayload {
     password: FormDataEntryValue | null;
 }
 
-export async function login(payload: LoginPayload): Promise<string> {
+export async function login(payload: LoginPayload): Promise<{ access_token: string; user: any }> {
     const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: {
@@ -16,9 +16,9 @@ export async function login(payload: LoginPayload): Promise<string> {
     });
 
     if (!res.ok) {
-        throw new Error("Failed to login");
+        throw new Error((await res.json()).message || "Login failed");
     }
 
     const data = await res.json();
-    return data.token;
+    return data;
 }
