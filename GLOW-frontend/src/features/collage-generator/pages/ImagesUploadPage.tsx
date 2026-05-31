@@ -8,6 +8,7 @@ import CameraCapture from "../../../shared/components/CameraCapture";
 import { validateCutout } from "../../../shared/lib/validateCutout";
 import type { ValidationResult } from "../../../shared/lib/validateCutout";
 import { useLogout } from "../../../shared/components/Logout";
+import MagicLoader from "../../../shared/components/MagicLoader";
 
 interface ImageItem {
   file: File;
@@ -21,84 +22,52 @@ export default function ImagesUploadPage() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateMessage, setGenerateMessage] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const replaceGalleryInputRef = useRef<HTMLInputElement | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  // track which image id is being replaced, null means adding new
   const [replaceTargetId, setReplaceTargetId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const processFile = async (file: File, idToReplace?: string) => {
     const reader = new FileReader();
-
     reader.onload = async () => {
       const id = idToReplace ?? (Date.now().toString() + Math.random());
-
-      const newImage: ImageItem = {
-        file,
-        preview: reader.result as string,
-        id,
-        validating: true,
-        validationResult: null,
-      };
-
+      const newImage: ImageItem = { file, preview: reader.result as string, id, validating: true, validationResult: null };
       if (idToReplace) {
-        setImages((prev) =>
-          prev.map((img) => (img.id === idToReplace ? newImage : img))
-        );
+        setImages((prev) => prev.map((img) => (img.id === idToReplace ? newImage : img)));
       } else {
         setImages((prev) => [...prev, newImage]);
       }
-
       const result = await validateCutout(file);
-
-      setImages((prev) =>
-        prev.map((img) =>
-          img.id === id ? { ...img, validating: false, validationResult: result } : img
-        )
-      );
+      setImages((prev) => prev.map((img) => img.id === id ? { ...img, validating: false, validationResult: result } : img));
     };
-
     reader.readAsDataURL(file);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-    Array.from(files).forEach((file) => processFile(file));
-    event.target.value = "";
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    Array.from(e.target.files).forEach((f) => processFile(f));
+    e.target.value = "";
   };
 
-  const handleReplaceFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleReplaceFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file || !replaceTargetId) return;
     processFile(file, replaceTargetId);
     setReplaceTargetId(null);
-    event.target.value = "";
+    e.target.value = "";
   };
 
   const handleCameraCapture = (file: File) => {
-    if (replaceTargetId) {
-      processFile(file, replaceTargetId);
-      setReplaceTargetId(null);
-    } else {
-      processFile(file);
-    }
+    processFile(file, replaceTargetId ?? undefined);
+    setReplaceTargetId(null);
     setIsCameraOpen(false);
   };
 
   const openReplaceFlow = (id: string) => {
     setReplaceTargetId(id);
     setTimeout(() => replaceGalleryInputRef.current?.click(), 50);
-  };
-
-  const openReplaceCameraFlow = (id: string) => {
-    setReplaceTargetId(id);
-    setIsCameraOpen(true);
-  };
-
-  const removeImage = (id: string) => {
-    setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
   const allValid =
@@ -108,27 +77,28 @@ export default function ImagesUploadPage() {
   const handleGenerate = async () => {
     if (!allValid) return;
     setIsGenerating(true);
-    setGenerateMessage("Creating collage...");
+    setProgress(0);
+    setGenerateMessage(null);
     try {
       const formData = new FormData();
-      images.forEach((image) => formData.append("images", image.file));
-      const video_url = await generateVideo(formData);
-      setGenerateMessage("Video generated and stored successfully.");
+      images.forEach((img) => formData.append("images", img.file));
+      const video_url = await generateVideo(formData, (frame) => {
+        setProgress(frame);
+      });
+      setProgress(300);
+      await new Promise((res) => setTimeout(res, 800));
       navigate("/collage-editor", { state: { videoUrl: video_url } });
     } catch (error) {
-      setGenerateMessage("Failed to generate video. Try again." + error);
-    } finally {
       setIsGenerating(false);
+      setGenerateMessage("Failed to generate video. Try again." + error);
     }
   };
 
   const handleLogout = useLogout();
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center p-4 md:p-8"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-    >
+    <div className="min-h-screen bg-cover bg-center p-4 md:p-8" style={{ backgroundImage: `url(${backgroundImage})` }}>
+
       <div className="w-full px-4 md:px-8">
         <div className="flex items-center justify-between mb-3">
           <button
@@ -147,25 +117,17 @@ export default function ImagesUploadPage() {
       </div>
 
       <div className="border-b border-white opacity-70 mb-8" />
-      <h1 className="text-2xl md:text-4xl font-serif text-center mb-10 text-white">
-        Upload Student Work
-      </h1>
+      <h1 className="text-2xl md:text-4xl font-serif text-center mb-10 text-white">Upload Student Work</h1>
 
       <div className="max-w-md mx-auto bg-white/90 backdrop-blur-xl rounded-[28px] border border-white/40 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.6)] p-6 text-center">
         <div className="flex justify-center mb-4">
-          <button
-            type="button"
-            onClick={() => { setReplaceTargetId(null); setIsCameraOpen(true); }}
-            className="w-28 h-28 md:w-32 md:h-32 rounded-[24px] bg-slate-100 flex items-center justify-center shadow-sm hover:bg-slate-200 transition"
-          >
+          <button type="button" onClick={() => { setReplaceTargetId(null); setIsCameraOpen(true); }}
+            className="w-28 h-28 md:w-32 md:h-32 rounded-[24px] bg-slate-100 flex items-center justify-center shadow-sm hover:bg-slate-200 transition">
             <img src={cameraImage} alt="Camera icon" className="w-16 h-16 md:w-20 md:h-20 object-contain" />
           </button>
         </div>
-        <button
-          type="button"
-          onClick={() => { setReplaceTargetId(null); setIsCameraOpen(true); }}
-          className="text-lg md:text-xl font-semibold text-slate-700 mb-2 hover:text-purple-800 transition"
-        >
+        <button type="button" onClick={() => { setReplaceTargetId(null); setIsCameraOpen(true); }}
+          className="text-lg md:text-xl font-semibold text-slate-700 mb-2 hover:text-purple-800 transition">
           Tap to take a photo
         </button>
         <div className="flex items-center gap-3 mb-6">
@@ -173,51 +135,24 @@ export default function ImagesUploadPage() {
           <span className="text-xs uppercase tracking-[0.2em] text-slate-400">or</span>
           <div className="h-px flex-1 bg-slate-300" />
         </div>
-        <button
-          type="button"
-          onClick={() => { setReplaceTargetId(null); galleryInputRef.current?.click(); }}
-          className="inline-flex items-center justify-center px-8 py-3 bg-slate-100 text-slate-800 font-semibold rounded-full shadow-lg shadow-slate-300/80 hover:bg-slate-300 transition"
-        >
+        <button type="button" onClick={() => { setReplaceTargetId(null); galleryInputRef.current?.click(); }}
+          className="inline-flex items-center justify-center px-8 py-3 bg-slate-100 text-slate-800 font-semibold rounded-full shadow-lg shadow-slate-300/80 hover:bg-slate-300 transition">
           Upload from Gallery
         </button>
       </div>
 
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
-      <input
-        ref={replaceGalleryInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleReplaceFileChange}
-      />
+      <input ref={galleryInputRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleFileChange} />
+      <input ref={replaceGalleryInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleReplaceFileChange} />
 
       {images.length > 0 && (
         <div className="mt-8 max-w-md mx-auto">
-          <h5 className="text-lg md:text-xl font-bold text-white mb-6">
-            Your images ({images.length})
-          </h5>
+          <h5 className="text-lg md:text-xl font-bold text-white mb-6">Your images ({images.length})</h5>
 
           {images.map((image) => (
-            <div
-              key={image.id}
-              className="p-4 md:p-5 mb-4 md:mb-5 border rounded-[20px] bg-white shadow-md"
-            >
+            <div key={image.id} className="p-4 md:p-5 mb-4 md:mb-5 border rounded-[20px] bg-white shadow-md">
               <div className="flex items-center gap-4 mb-4">
-                <img
-                  src={image.preview}
-                  alt={image.file.name}
-                  className="h-20 w-20 object-cover rounded-lg flex-shrink-0"
-                />
-                <p className="font-bold text-md md:text-base text-slate-700 break-all">
-                  {image.file.name}
-                </p>
+                <img src={image.preview} alt={image.file.name} className="h-20 w-20 object-cover rounded-lg flex-shrink-0" />
+                <p className="font-bold text-md md:text-base text-slate-700 break-all">{image.file.name}</p>
               </div>
 
               {image.validating && (
@@ -231,96 +166,57 @@ export default function ImagesUploadPage() {
               )}
 
               {!image.validating && image.validationResult && (
-                <div
-                  className="rounded-[14px] p-4 mb-4"
-                  style={{
-                    backgroundColor: image.validationResult.isValid ? "#d1fae5" : "#fef3c7",
-                    border: `1px solid ${image.validationResult.isValid ? "#6ee7b7" : "#fcd34d"}`,
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span
-                      className="font-bold text-sm"
-                      style={{ color: image.validationResult.isValid ? "#065f46" : "#92400e" }}
-                    >
-                      {image.validationResult.isValid 
-                        ? "✓ Image looks good!"
-                        : "⚠ Image needs attention"}
-                    </span>
-                    
-                  </div>
-
-                  {/* issues + advice */}
+                <div className="rounded-[14px] p-4 mb-4" style={{
+                  backgroundColor: image.validationResult.isValid ? "#d1fae5" : "#fef3c7",
+                  border: `1px solid ${image.validationResult.isValid ? "#6ee7b7" : "#fcd34d"}`,
+                }}>
+                  <span className="font-bold text-sm" style={{ color: image.validationResult.isValid ? "#065f46" : "#92400e" }}>
+                    {image.validationResult.isValid ? "✓ Image looks good!" : "⚠ Image needs attention"}
+                  </span>
                   {image.validationResult.issues.length > 0 && (
                     <ul className="space-y-1 mt-2">
                       {image.validationResult.issues.map((issue, i) => (
                         <li key={i} className="text-xs text-amber-900 flex items-start gap-1">
-                          <span className="mt-0.5">•</span>
-                          <span>{issue}</span>
+                          <span className="mt-0.5">•</span><span>{issue}</span>
                         </li>
                       ))}
                     </ul>
                   )}
-
                 </div>
               )}
 
               <div className="flex gap-2 justify-end">
-                <button
-                  type="button"
-                  onClick={() => openReplaceCameraFlow(image.id)}
+                <button type="button" onClick={() => { setReplaceTargetId(image.id); setIsCameraOpen(true); }}
                   className="px-3 py-1 md:px-4 md:py-2 text-white rounded-[20px] text-sm font-semibold hover:opacity-90 transition"
-                  style={{ background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)" }}
-                >
+                  style={{ background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)" }}>
                   📷 Replace
                 </button>
-                <button
-                  type="button"
-                  onClick={() => openReplaceFlow(image.id)}
-                  className="px-3 py-1 md:px-4 md:py-2 bg-slate-200 text-slate-800 rounded-[20px] text-sm font-semibold hover:bg-slate-300 transition"
-                >
+                <button type="button" onClick={() => openReplaceFlow(image.id)}
+                  className="px-3 py-1 md:px-4 md:py-2 bg-slate-200 text-slate-800 rounded-[20px] text-sm font-semibold hover:bg-slate-300 transition">
                   🖼 From Gallery
                 </button>
-                <button
-                  type="button"
-                  onClick={() => removeImage(image.id)}
-                  className="px-3 py-1 md:px-4 md:py-2 bg-red-600 text-white rounded-[20px] hover:bg-red-700 text-sm font-semibold transition"
-                >
+                <button type="button" onClick={() => setImages((prev) => prev.filter((img) => img.id !== image.id))}
+                  className="px-3 py-1 md:px-4 md:py-2 bg-red-600 text-white rounded-[20px] hover:bg-red-700 text-sm font-semibold transition">
                   Remove
                 </button>
               </div>
             </div>
           ))}
 
-          {/* generate button — only when all pass */}
           {allValid && (
             <div className="mt-8 text-center">
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={isGenerating}
+              <button type="button" onClick={handleGenerate} disabled={isGenerating}
                 className="px-12 py-5 text-white text-xl font-semibold rounded-[20px] transition"
-                style={{
-                  background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
-                  opacity: isGenerating ? 0.7 : 1,
-                  cursor: isGenerating ? "not-allowed" : "pointer",
-                }}
-              >
+                style={{ background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)", opacity: isGenerating ? 0.7 : 1, cursor: isGenerating ? "not-allowed" : "pointer" }}>
                 {isGenerating ? "Generating..." : "Start the magic!"}
               </button>
-              <p className="mt-4 text-white text-sm font-medium">
-                Clicking this button will generate a collage video.
-              </p>
-              {generateMessage && (
-                <p className="mt-3 text-green-200 font-medium">{generateMessage}</p>
-              )}
+              <p className="mt-4 text-white text-sm font-medium">Clicking this button will generate a collage video.</p>
+              {generateMessage && <p className="mt-3 text-green-200 font-medium">{generateMessage}</p>}
             </div>
           )}
 
           {!allValid && images.some((img) => img.validationResult && !img.validationResult.isValid) && (
-            <p className="text-center text-white/80 text-sm mt-4">
-              Fix or replace the flagged images to continue.
-            </p>
+            <p className="text-center text-white/80 text-sm mt-4">Fix or replace the flagged images to continue.</p>
           )}
         </div>
       )}
@@ -330,6 +226,8 @@ export default function ImagesUploadPage() {
         onClose={() => { setIsCameraOpen(false); setReplaceTargetId(null); }}
         onCapture={handleCameraCapture}
       />
+
+      {isGenerating && <MagicLoader progress={progress} />}
     </div>
   );
 }
