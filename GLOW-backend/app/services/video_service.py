@@ -42,11 +42,10 @@ class VideoService:
             scale *= 1.0 + a["amp"] * math.sin(w)
         return cx, cy, angle, scale
 
-    def generate_video(self, collage_url: str, collage_id: int) -> dict:
+    def generate_video(self, collage_url: str, collage_id: int, progress_callback=None) -> dict:
         if not collage_url:
             raise ValueError(f"collage_url is empty for collage_id={collage_id}")
 
-        # Find the scene JSON next to the preview PNG
         preview_path = self._resolve_local_path(collage_url)
         scene_path = os.path.splitext(preview_path)[0] + ".json"
         if not os.path.exists(scene_path):
@@ -61,7 +60,6 @@ class VideoService:
         video_width = 1900
         video_height = 1200
 
-        # Scale everything to video resolution once, up front
         self._video_scale = video_height / canvas_h
         scaled_w = int(canvas_w * self._video_scale)
         if scaled_w <= video_width:
@@ -70,7 +68,6 @@ class VideoService:
         background = Image.open(scene["background_path"]).convert("RGBA")
         background_scaled = background.resize((scaled_w, video_height), Image.LANCZOS)
 
-        # Pre-load and pre-scale each sprite image once
         for s in sprites:
             img = Image.open(s["image_path"]).convert("RGBA")
             img.thumbnail((s["size"], s["size"]), Image.LANCZOS)
@@ -114,10 +111,11 @@ class VideoService:
                 video_writer.write(bgr)
                 if i % 30 == 0:
                     print(f"Rendered frame {i}/{total_frames}")
+                    if progress_callback:
+                        progress_callback(i, total_frames)
         finally:
             video_writer.release()
 
-        # Re-encode for compatibility & smaller file size
         try:
             subprocess.run([
                 "ffmpeg", "-y", "-i", str(temp_path),
@@ -135,6 +133,10 @@ class VideoService:
 
         BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
         video_url = f"{BASE_URL}/media/{relative_video_path}"
+
+        
+        if progress_callback:
+            progress_callback(total_frames, total_frames)
 
         return {
             "message":    f"Video created successfully for collage {collage_id}",
@@ -167,7 +169,6 @@ class VideoService:
             half_w = tile.width  // 2
             half_h = tile.height // 2
 
-            # Cull if entirely outside the viewport
             if (screen_x + half_w < 0 or screen_x - half_w > view_w or
                 screen_y + half_h < 0 or screen_y - half_h > view_h):
                 continue
