@@ -7,6 +7,12 @@ export async function generateVideo(images: FormData): Promise<string> {
         body: images,
     });
 
+    if (res.status === 401) {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        window.location.href = "/user-role-selection";
+        return "";
+    }
     if (!res.ok) {
         throw new Error("Failed to generate video");
     }

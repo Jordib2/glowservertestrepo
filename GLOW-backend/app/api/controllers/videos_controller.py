@@ -14,7 +14,7 @@ import uuid
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 # ✅ Needed for local save
 repo = VideosRepository()

@@ -8,7 +8,6 @@ import CameraCapture from "../../../shared/components/CameraCapture";
 import { validateCutout } from "../../../shared/lib/validateCutout";
 import type { ValidationResult } from "../../../shared/lib/validateCutout";
 import { useLogout } from "../../../shared/components/Logout";
-import { logout } from "../../../shared/services/accountService";
 
 interface ImageItem {
   file: File;
