@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Role } from "../../shared/types/role.ts";
+import type { Role } from "../../shared/types/Role.ts";
 
 interface UserRoleSelectionProps {
     onChange?: (role: Role | null) => void;

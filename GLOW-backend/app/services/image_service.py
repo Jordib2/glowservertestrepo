@@ -71,7 +71,9 @@ class ImageService:
                     f.write(image_bytes)
 
             # Save to database
-            result = self.images_repo.save_image(collage_id, save_path)
+            BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
+            image_url = f"{BASE_URL}/media/{unique_filename}"
+            result = self.images_repo.save_image(collage_id, image_url)
             image_paths.append(result["url"])
 
         return {"collage_id": collage_id, "image_paths": image_paths}

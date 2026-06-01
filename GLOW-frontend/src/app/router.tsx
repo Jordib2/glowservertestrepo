@@ -7,6 +7,7 @@ import CollageEditorPage from "../features/collage-generator/pages/CollageEditor
 import CollageReviewExportPage from "../features/collage-generator/pages/CollageReviewExportPage.tsx";
 import UserRoleSelection from "../features/accounts/UserRoleSelection.tsx";
 import UserLogin from "../features/accounts/UserLogin.tsx";
+import { MyVideosPage } from "../features/collage-generator/pages/MyVideosPage";;
 
 export const router = createBrowserRouter([
     {
@@ -40,7 +41,12 @@ export const router = createBrowserRouter([
             {
                 path: "user-login",
                 element: <UserLogin />
+            },
+            {
+                path: "my-videos",
+                element: <MyVideosPage />
             }
+    
         ]
     }
 ]);

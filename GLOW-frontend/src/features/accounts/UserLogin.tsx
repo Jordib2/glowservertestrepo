@@ -1,4 +1,4 @@
-import type { Role } from "../../shared/types/role.ts";
+import type { Role } from "../../shared/types/Role.ts";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { login } from "../../shared/services/accountService.ts";
