@@ -55,8 +55,10 @@ export default function TeacherDiscoveryPage() {
 
       <div className="border-b border-white opacity-70 mb-8" />
 
-      <div className="max-w-md mx-auto px-4 md:px-6 py-8 flex flex-col items-center">
-        <div className="w-full mb-14 flex flex-col items-center">
+      
+      <div className="max-w-md mx-auto px-4 md:px-6 pt-4 pb-36 flex flex-col items-center">
+        
+        <div className="w-full mb-8 flex flex-col items-center">
           <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
             Select a class
           </label>

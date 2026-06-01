@@ -6,6 +6,7 @@ import ImagesReviewPage from "../features/collage-generator/pages/ImagesReviewPa
 import CollageEditorPage from "../features/collage-generator/pages/CollageEditorPage.tsx";
 import CollageReviewExportPage from "../features/collage-generator/pages/CollageReviewExportPage.tsx";
 import TeacherDiscoveryPage from "../features/collage-generator/pages/TeacherDiscoveryPage.tsx";
+import TeacherProfilePage from "../features/collage-generator/pages/TeacherProfilePage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -35,7 +36,12 @@ export const router = createBrowserRouter([
             {
                 path: "teacher_discovery",
                 element: <TeacherDiscoveryPage />
+            },
+            {
+                path: "teacher-profile",
+                element: <TeacherProfilePage />
             }
+
         ]
     }
 ]);
