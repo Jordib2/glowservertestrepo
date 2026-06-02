@@ -80,19 +80,27 @@ export default function ImagesUploadPage() {
     setProgress(0);
     setGenerateMessage(null);
     try {
-      const formData = new FormData();
-      images.forEach((img) => formData.append("images", img.file));
-      const video_url = await generateVideo(formData, (frame) => {
-        setProgress(frame);
-      });
-      setProgress(300);
-      await new Promise((res) => setTimeout(res, 800));
-      navigate("/collage-editor", { state: { videoUrl: video_url } });
+        const formData = new FormData();
+        images.forEach((img) => formData.append("images", img.file));
+
+        // callback krijgt (frame, total) – precies zoals het vroeger was
+        const result = await generateVideo(formData, (frame, total) => {
+            setProgress(Math.round((frame / total) * 300));
+        });
+
+        setProgress(300);
+        await new Promise((res) => setTimeout(res, 800));
+        navigate("/collage-editor", {
+            state: {
+                videoUrl: result.video_url,
+                videoId: result.video_id,
+            },
+        });
     } catch (error) {
-      setIsGenerating(false);
-      setGenerateMessage("Failed to generate video. Try again." + error);
+        setIsGenerating(false);
+        setGenerateMessage("Failed to generate video. " + error);
     }
-  };
+};
 
   const handleLogout = useLogout();
 

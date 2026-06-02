@@ -7,7 +7,7 @@ export default function CollageEditorPage() {
   const navigate = useNavigate();
 
   const videoUrl = location.state?.videoUrl;
-
+  const videoId = location.state?.videoId;
   return (
     <div className="min-h-screen bg-cover bg-center p-4 md:p-8" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <div className="w-full px-4 md:px-8">
@@ -46,7 +46,10 @@ export default function CollageEditorPage() {
             <button
               onClick={() =>
                 navigate("/review-export-collage", {
-                  state: { videoUrl }
+                  state: { 
+                    videoUrl: videoUrl,
+                    videoId: videoId
+                  }
                 })
               }
               className="px-6 py-3 text-white rounded-[20px] text-base md:text-lg font-semibold hover:opacity-90 transition"

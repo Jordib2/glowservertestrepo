@@ -3,7 +3,7 @@ import { API_URL } from "./api";
 export async function generateVideo(
   images: FormData,
   onProgress: (frame: number, total: number) => void
-): Promise<string> {
+): Promise<{ video_url: string; video_id: number }> {
   
   const res = await fetch(`${API_URL}/api/generate-video`, {
     headers: { Authorization: `Bearer ${sessionStorage.getItem("token")}` },
@@ -12,18 +12,17 @@ export async function generateVideo(
   });
 
   if (res.status === 401) {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        window.location.href = "/user-role-selection";
-        return "";
-    }
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+    window.location.href = "/user-role-selection";
+    return { video_url: "", video_id: 0 };
+  }
 
   if (!res.ok) throw new Error("Failed to start video generation");
 
   const data = await res.json();
   const job_id = data.job_id;
 
- 
   return new Promise((resolve, reject) => {
     const es = new EventSource(`${API_URL}/api/generate-video/progress/${job_id}`);
 
@@ -32,7 +31,10 @@ export async function generateVideo(
         const parsed = JSON.parse(e.data);
         if (parsed.done) {
           es.close();
-          resolve(parsed.video_url);
+          resolve({
+            video_url: parsed.video_url,
+            video_id: parsed.video_id,   // <-- deze stond er vroeger niet, nu wel
+          });
         } else if (parsed.error) {
           es.close();
           reject(new Error(parsed.error));
