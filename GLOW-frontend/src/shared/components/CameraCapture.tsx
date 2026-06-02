@@ -84,50 +84,51 @@ export default function CameraCapture({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-[28px] p-4 shadow-2xl">
-        <h2 className="text-xl font-bold text-slate-800 mb-4 text-center">
-          Take a photo
-        </h2>
+        
+        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white rounded-[28px] p-4 shadow-2xl">
+                <h2 className="text-xl font-bold text-slate-800 mb-4 text-center">
+                    Take a photo
+                </h2>
 
-        {error ? (
-          <div className="p-4 text-center text-red-700 font-semibold">
-            {error}
-          </div>
-        ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full rounded-[20px] bg-black aspect-[3/4] object-cover"
-          />
-        )}
+                {error ? (
+                    <div className="p-4 text-center text-red-700 font-semibold">
+                        {error}
+                    </div>
+                ) : (
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full rounded-[20px] bg-black aspect-[3/4] object-cover"
+                    />
+                )}
 
-        <canvas ref={canvasRef} className="hidden" />
+                <canvas ref={canvasRef} className="hidden" />
 
-        <div className="flex gap-3 mt-5">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex-1 px-4 py-3 rounded-[18px] bg-slate-200 text-slate-800 font-semibold"
-          >
-            Cancel
-          </button>
+                <div className="flex gap-3 mt-5">
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="flex-1 px-4 py-3 rounded-[18px] bg-slate-200 text-slate-800 font-semibold"
+                    >
+                        Cancel
+                    </button>
 
-          <button
-            type="button"
-            onClick={takePhoto}
-            disabled={!!error}
-            className="flex-1 px-4 py-3 rounded-[18px] text-white font-semibold disabled:opacity-50"
-            style={{
-              background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
-            }}
-          >
-            Capture
-          </button>
+                    <button
+                        type="button"
+                        onClick={takePhoto}
+                        disabled={!!error}
+                        className="flex-1 px-4 py-3 rounded-[18px] text-white font-semibold disabled:opacity-50"
+                        style={{
+                            background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
+                        }}
+                    >
+                        Capture
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

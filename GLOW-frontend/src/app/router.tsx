@@ -7,6 +7,8 @@ import CollageEditorPage from "../features/collage-generator/pages/CollageEditor
 import CollageReviewExportPage from "../features/collage-generator/pages/CollageReviewExportPage.tsx";
 import UserRoleSelection from "../features/accounts/UserRoleSelection.tsx";
 import UserLogin from "../features/accounts/UserLogin.tsx";
+import TeacherDiscoveryPage from "../features/collage-generator/pages/TeacherDiscoveryPage.tsx";
+import TeacherProfilePage from "../features/collage-generator/pages/TeacherProfilePage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -40,7 +42,16 @@ export const router = createBrowserRouter([
             {
                 path: "user-login",
                 element: <UserLogin />
+            },
+            {
+                path: "teacher_discovery",
+                element: <TeacherDiscoveryPage />
+            },
+            {
+                path: "teacher-profile",
+                element: <TeacherProfilePage />
             }
+
         ]
     }
 ]);
