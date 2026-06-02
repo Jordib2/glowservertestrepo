@@ -1,23 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import backgroundImage from "../../../assets/background.png";
 import buttonBg from "../../../assets/buttonBg.png";
-import profileImage from "../../../assets/profilepic.png";
 
 const classOptions = [
-  "5E Class - Eindhoven",
-  "4A Class - Amsterdam",
-  "6B Class - Rotterdam",
-  "3C Class - Utrecht"
+  "5E Class",
+  "4A Class",
+  "6B Class",
+  "3C Class"
 ];
 
 export default function TeacherDiscoveryPage() {
   const navigate = useNavigate();
-  const [selectedClass, setSelectedClass] = useState<string>("5E Class - Eindhoven");
+  const [selectedClass, setSelectedClass] = useState<string>("5E Class");
 
   const handleViewWork = () => {
     if (!selectedClass) return;
-    navigate("/review-export-collage", {
+    navigate("/my-videos", {
       state: { selectedClass }
     });
   };
@@ -30,33 +28,8 @@ export default function TeacherDiscoveryPage() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center p-4 md:p-8"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-    >
-      <div className="w-full px-4 md:px-8">
-        <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-white text-2xl md:text-4xl w-12 h-12 md:w-16 md:h-16 flex items-center justify-center hover:opacity-80 transition"
-          >
-            ←
-          </button>
-
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white overflow-hidden">
-            <img
-              src={profileImage}
-              alt="Profile icon"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-b border-white opacity-70 mb-8" />
-
       
-      <div className="max-w-md mx-auto px-4 md:px-6 pt-4 pb-36 flex flex-col items-center">
+      <div className="mt-5 max-w-md mx-auto px-4 md:px-6 pt-4 pb-36 flex flex-col items-center">
         
         <div className="w-full mb-8 flex flex-col items-center">
           <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
@@ -120,6 +93,5 @@ export default function TeacherDiscoveryPage() {
           </button>
         </div>
       </div>
-    </div>
   );
 }

@@ -1,13 +1,10 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateVideo } from "../../../shared/services/videoService";
-import backgroundImage from "../../../assets/background.png";
 import cameraImage from "../../../assets/camera.png";
-import profileImage from "../../../assets/profilepic.png";
 import CameraCapture from "../../../shared/components/CameraCapture";
 import { validateCutout } from "../../../shared/lib/validateCutout";
 import type { ValidationResult } from "../../../shared/lib/validateCutout";
-import { useLogout } from "../../../shared/components/Logout";
 import MagicLoader from "../../../shared/components/MagicLoader";
 
 interface ImageItem {
@@ -80,51 +77,32 @@ export default function ImagesUploadPage() {
     setProgress(0);
     setGenerateMessage(null);
     try {
-        const formData = new FormData();
-        images.forEach((img) => formData.append("images", img.file));
+      const formData = new FormData();
+      images.forEach((img) => formData.append("images", img.file));
 
-        // callback krijgt (frame, total) – precies zoals het vroeger was
-        const result = await generateVideo(formData, (frame, total) => {
-            setProgress(Math.round((frame / total) * 300));
-        });
+      // callback krijgt (frame, total) – precies zoals het vroeger was
+      const result = await generateVideo(formData, (frame, total) => {
+        setProgress(Math.round((frame / total) * 300));
+      });
 
-        setProgress(300);
-        await new Promise((res) => setTimeout(res, 800));
-        navigate("/collage-editor", {
-            state: {
-                videoUrl: result.video_url,
-                videoId: result.video_id,
-            },
-        });
+      setProgress(300);
+      await new Promise((res) => setTimeout(res, 800));
+      navigate("/collage-editor", {
+        state: {
+          videoUrl: result.video_url,
+          videoId: result.video_id,
+        },
+      });
     } catch (error) {
-        setIsGenerating(false);
-        setGenerateMessage("Failed to generate video. " + error);
+      setIsGenerating(false);
+      setGenerateMessage("Failed to generate video. " + error);
     }
-};
+  };
 
-  const handleLogout = useLogout();
 
   return (
-    <div className="min-h-screen bg-cover bg-center p-4 md:p-8" style={{ backgroundImage: `url(${backgroundImage})` }}>
+      <div className="mt-10 w-full px-4 md:px-8">
 
-      <div className="w-full px-4 md:px-8">
-        <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={handleLogout}
-            className="px-6 py-2 rounded-[20px] text-white font-semibold transition hover:opacity-90"
-            style={{
-                background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
-            }}
-        >
-            Close the Book
-        </button>
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white overflow-hidden">
-            <img src={profileImage} alt="Profile icon" className="w-full h-full object-cover" />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-b border-white opacity-70 mb-8" />
       <h1 className="text-2xl md:text-4xl font-serif text-center mb-10 text-white">Upload Student Work</h1>
 
       <div className="max-w-md mx-auto bg-white/90 backdrop-blur-xl rounded-[28px] border border-white/40 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.6)] p-6 text-center">

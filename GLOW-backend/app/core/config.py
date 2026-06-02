@@ -8,7 +8,7 @@ load_dotenv(dotenv_path=env_path)
 class Settings(BaseSettings):
     jwt_access_secret: str
     jwt_refresh_secret: str
-    access_ttl_minutes: int = 15
+    access_ttl_minutes: int = 45
     refresh_ttl_days: int = 7
     
     base_url: str

@@ -8,18 +8,18 @@ export default function BottomNavBar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-50">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-50">
       <div 
-        className="flex items-center justify-between px-8 py-3 rounded-[32px] shadow-2xl backdrop-blur-md"
+        className="flex items-center justify-between px-8 py-1 rounded-[32px] shadow-2xl backdrop-blur-md"
         style={{
-          background: "linear-gradient(90deg, rgba(162,112,236,0.85) 0%, rgba(118,52,212,0.85) 50%, rgba(162,112,236,0.85) 100%)",
-          border: "1px solid rgba(255, 255, 255, 0.2)"
+          background: "linear-gradient(180deg, rgba(197, 148, 229, 255) 0%, rgba(80, 14, 139, 255) 100%)",
+          border: "1px solid rgba(255, 255, 255, 0.3)"
         }}
       >
         {/* History Button */}
         <button 
-          onClick={() => navigate("/review-export-collage")} 
-          className={`flex flex-col items-center gap-1 transition-opacity ${isActive("/review-export-collage") ? "opacity-100" : "opacity-60 hover:opacity-100"}`}
+          onClick={() => navigate("/my-videos")} 
+          className={`flex flex-col items-center gap-1 transition-opacity ${isActive("/my-videos") ? "opacity-100" : "opacity-60 hover:opacity-100"}`}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
             <circle cx="12" cy="12" r="10"></circle>

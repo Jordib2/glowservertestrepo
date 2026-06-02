@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import BottomNavBar from '../shared/components/BottomNavBar'; 
+import backgroundImage from "../assets/background.png";
 
 export default function Layout() {
   const location = useLocation();
@@ -8,13 +9,15 @@ export default function Layout() {
   const hideNavBarPaths = [
     "/user-role-selection",
     "/",
-    "/user-login"
+    "/user-login",
+    "/review-export-collage",
+    "/collage-editor"
   ];
 
   const shouldShowNavBar = !hideNavBarPaths.includes(location.pathname);
 
   return (
-    <div className={`relative min-h-screen ${shouldShowNavBar ? 'pb-24' : ''}`}>
+    <div className={`relative min-h-screen ${shouldShowNavBar ? 'pb-24' : ''}`} style={{ backgroundImage: `url(${backgroundImage})` }}>
         
         <main>
             <Outlet />

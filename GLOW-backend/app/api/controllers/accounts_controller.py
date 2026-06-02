@@ -33,7 +33,7 @@ async def login(login_data: LoginIn):
         raise HTTPException(status_code=401, detail=str(e))
     
 @router.post("/logout", status_code=204)
-async def logout(user: dict = Depends(get_current_user)):
+async def logout():
     return None
     
 

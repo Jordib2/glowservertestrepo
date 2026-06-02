@@ -1,53 +1,22 @@
-import { useNavigate } from "react-router-dom";
-import backgroundImage from "../../../assets/background.png";
 import profileImage from "../../../assets/profilepic.png"; 
+import { useLogout } from "../../../shared/components/Logout";
 
 export default function TeacherProfilePage() {
-  const navigate = useNavigate();
 
-  // Placeholder data for the name of the teacher
-  const teacherName = "Mrs. Katerina Borisova";
+  const user = sessionStorage.getItem("user");
+  const teacherName = user ? JSON.parse(user).name : "Teacher Name";
 
-  const handleLogout = () => {
-    // logout logic not applied yet
-    console.log("User logged out");
-    navigate("/user-role-selection"); 
-  };
+  const handleLogout = useLogout();
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center p-4 md:p-8 flex flex-col"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-    >
-      <div className="w-full px-4 md:px-8">
-        <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-white text-2xl md:text-4xl w-12 h-12 md:w-16 md:h-16 flex items-center justify-center hover:opacity-80 transition"
-          >
-            ←
-          </button>
-
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white overflow-hidden shadow-sm">
-            <img
-              src={profileImage}
-              alt="Profile icon"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-b border-white opacity-70 mb-8" />
-
-      <div className="flex flex-col items-center flex-1 pb-24">
+      <div className="mt-5 flex flex-col items-center flex-1 pb-24">
         <h1 className="text-white text-3xl font-serif mb-10 tracking-wide">
           Profile
         </h1>
 
         <div className="flex flex-col items-center w-full max-w-sm relative">
           {/* Profile Picture */}
-          <div className="w-48 h-56 rounded-[50%] bg-slate-300 overflow-hidden border-2 border-white/20 shadow-[0_0_30px_rgba(255,255,255,0.1)] mb-6 relative z-10">
+          <div className="w-48 h-56 rounded-[50%] overflow-hidden mb-6 relative z-10">
             <img 
               src={profileImage} 
               alt="Teacher Profile" 
@@ -60,6 +29,7 @@ export default function TeacherProfilePage() {
             {teacherName}
           </h2>
         </div>
+        
 
         <div className="flex-1"></div>
 
@@ -71,6 +41,5 @@ export default function TeacherProfilePage() {
           Log Out
         </button>
       </div>
-    </div>
   );
 }
