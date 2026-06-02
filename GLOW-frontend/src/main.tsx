@@ -4,6 +4,10 @@ import { RouterProvider } from 'react-router-dom'
 import './index.css'
 import { router } from './app/router.tsx'
 
+import {registerSW} from 'virtual:pwa-register'
+
+registerSW({ immediate: true})
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RouterProvider router={router} />
