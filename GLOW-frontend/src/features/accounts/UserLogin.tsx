@@ -39,25 +39,26 @@ export default function UserLogin() {
     };
 
     return (
-        <div className="flex flex-col items-center p-8 bg-[url('../../../login-screen-bg.png')] bg-cover bg-center min-h-screen">
+        <div className="flex flex-col items-center p-4 sm:p-8 bg-[url('../../../login-screen-bg.png')] bg-cover bg-center min-h-screen">
             <div className="flex flex-col items-center gap-4">
-                <h1 className="text-5xl font-bold tracking-wide text-white drop-shadow-[0_2px_12px_rgba(255,154,60,0.45)] [text-shadow:_0_0_8px_rgba(0,0,0,0.5)]">
+                <h1 className="text-4xl sm:text-5xl font-bold tracking-wide text-white drop-shadow-[0_2px_12px_rgba(255,154,60,0.45)] [text-shadow:_0_0_8px_rgba(0,0,0,0.5)]">
                     CONNECT
                 </h1>
                 <img src="/vector.png" className="mt-[-1.5rem]" />
-                <p className="font-bold text-white/90 text-xl max-w-md drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+                <p className="font-bold text-white/90 text-base sm:text-xl max-w-md text-center drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
                     Turn your class into one endless story
                 </p>
             </div>
 
-            <div className="flex flex-col items-center w-full mt-auto bg-[#2a1a3a]/40 to-transparent py-10 px-6 rounded-[40px]">
-                <h2 className="mb-3 text-2xl font-semibold tracking-wide text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+
+            <div className="flex flex-col items-center w-full mt-auto bg-[#2a1a3a]/40 to-transparent py-8 sm:py-10 px-4 sm:px-6 rounded-[40px]">
+                <h2 className="mb-3 text-xl sm:text-2xl font-semibold tracking-wide text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
                     Begin Your Tale
                 </h2>
 
                 <form
                     onSubmit={handleSubmit}
-                    className="w-full max-w-md px-10 py-8 bg-no-repeat"
+                    className="w-full max-w-md px-4 sm:px-10 py-8 bg-no-repeat"
                     style={{
                         backgroundImage: "url('/form_panel.png')",
                         backgroundSize: "100% 100%",
@@ -73,10 +74,11 @@ export default function UserLogin() {
                         </div>
                     )}
 
-                    <div className="flex items-center gap-1">
+                    {/* Label stacks above input on mobile, inline on sm+ */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                         <label
                             htmlFor="username"
-                            className="w-23 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                            className="sm:w-28 shrink-0 text-white font-bold text-base sm:text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
                         >
                             Name
                         </label>
@@ -84,14 +86,14 @@ export default function UserLogin() {
                             id="username"
                             name="username"
                             placeholder="Who seeks entry?"
-                            className="flex-1 px-4 py-2 rounded-[20px] bg-white/40 text-base md:text-lg text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
+                            className="w-full px-4 py-2 rounded-[20px] bg-white/40 text-base text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
                         />
                     </div>
 
-                    <div className="flex items-center gap-1 mt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-4">
                         <label
                             htmlFor="password"
-                            className="w-23 shrink-0 text-white font-bold text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                            className="sm:w-28 shrink-0 text-white font-bold text-base sm:text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
                         >
                             Secret Code
                         </label>
@@ -100,14 +102,14 @@ export default function UserLogin() {
                             name="password"
                             type="password"
                             placeholder="••••••••"
-                            className="flex-1 px-4 py-2 rounded-[20px] bg-white/40 text-base md:text-lg text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
+                            className="w-full px-4 py-2 rounded-[20px] bg-white/40 text-base text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="mt-8 mb-[-1rem] w-full px-20 py-3 text-white rounded-[20px] text-base md:text-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
+                        className="mt-8 mb-[-1rem] w-full px-4 sm:px-20 py-3 text-white rounded-[20px] text-base sm:text-lg font-semibold hover:opacity-90 transition disabled:opacity-50"
                         style={{
                             background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
                         }}
@@ -115,6 +117,25 @@ export default function UserLogin() {
                         {submitting ? "Opening the door…" : "Step Into the Story"}
                     </button>
                 </form>
+
+                {role === "student" && (
+                    <p className="text-white/80 text-sm mt-2 mb-2">
+                        Don't have an account? 
+                        <button
+                            onClick={() => navigate("/user-role-selection")}
+                            className="text-purple-200 hover:text-purple-800 focus:outline-none"
+                        >
+                            Click here to sign up.
+                        </button>
+                    </p>
+                )}
+
+                <button
+                    onClick={() => navigate("/user-role-selection")}
+                    className="self-start ml-5 px-10 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-sans text-sm tracking-wider uppercase hover:bg-white/20 transition-all shadow-lg active:scale-95"
+                >
+                    Back
+                </button>
             </div>
         </div>
     );

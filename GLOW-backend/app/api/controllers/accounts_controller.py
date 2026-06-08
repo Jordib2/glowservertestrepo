@@ -16,7 +16,7 @@ class SignupIn(BaseModel):
     username: str = Field(min_length=3, max_length=30, pattern="^[a-zA-Z0-9_]+$")
     password: str = Field(min_length=6, max_length=100)
     role: str = Field(pattern="^(teacher|student)$")
-
+    class_name: str = Field(min_length=2, max_length=3)
     @field_validator("role")
     @classmethod
     def validate_role(cls, v):
@@ -35,13 +35,12 @@ async def login(login_data: LoginIn):
 @router.post("/logout", status_code=204)
 async def logout():
     return None
-    
 
 
 @router.post("/signup")
 async def signup(signup_data: SignupIn):
     try:
-        return service.signup(name=signup_data.name, username=signup_data.username, password=signup_data.password, role=signup_data.role)
+        return service.signup(name=signup_data.name, username=signup_data.username, password=signup_data.password, role=signup_data.role, class_name=signup_data.class_name)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

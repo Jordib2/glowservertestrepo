@@ -21,16 +21,17 @@ class AccountsService:
                 "id": user["id"],
                 "name": user["name"],
                 "username": user["username"],
-                "role": user["role"]
+                "role": user["role"],
+                "class_name": user["class_name"]
             }
         }
         
-    def signup(self, name: str, username: str, password: str, role: str) -> dict:
+    def signup(self, name: str, username: str, password: str, role: str, class_name: str) -> dict:
         if role == "admin":
             raise ValueError("Cannot create admin users")
         if self.accounts_repo.find_by_username(username, role):
             raise ValueError("Username already exists")
-        user = self.accounts_repo.create_user(name, username, hash_password(password), role)
+        user = self.accounts_repo.create_user(name, username, hash_password(password), role, class_name)
         token = sign_access_token(user["id"], user["role"])
         return {
             "access_token": token,
