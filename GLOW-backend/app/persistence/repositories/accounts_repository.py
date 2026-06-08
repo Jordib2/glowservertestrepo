@@ -49,3 +49,10 @@ class AccountsRepository:
             cursor.close()
             db.close() 
             
+    
+    def register_student(self, name: str, username: str, password: str, role: str, class_name: str) -> dict:
+        if role != "student":
+            raise ValueError("Role must be 'student' for student registration")
+        
+        return self.create_user(name=name, username=username, password=password, role=role, class_name=class_name)
+            

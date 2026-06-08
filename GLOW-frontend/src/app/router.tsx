@@ -9,7 +9,8 @@ import UserRoleSelection from "../features/accounts/UserRoleSelection.tsx";
 import UserLogin from "../features/accounts/UserLogin.tsx";
 import TeacherDiscoveryPage from "../features/collage-generator/pages/TeacherDiscoveryPage.tsx";
 import TeacherProfilePage from "../features/collage-generator/pages/TeacherProfilePage.tsx";
-import { MyVideosPage } from "../features/collage-generator/pages/MyVideosPage";;
+import { MyVideosPage } from "../features/collage-generator/pages/MyVideosPage";
+import StudentRegister from "../features/accounts/StudentRegister.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -55,8 +56,12 @@ export const router = createBrowserRouter([
             {
                 path: "my-videos",
                 element: <MyVideosPage />
+            },
+            {
+                path: "student-register",
+                element: <StudentRegister />
             }
-    
+
         ]
     }
 ]);

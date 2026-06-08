@@ -6,6 +6,14 @@ interface LoginPayload {
     password: FormDataEntryValue | null;
 }
 
+interface RegisterStudentPayload {
+    name: FormDataEntryValue | null;
+    username: FormDataEntryValue | null;
+    class_name: FormDataEntryValue | null;
+    password: FormDataEntryValue | null;
+    confirm_password: FormDataEntryValue | null;
+}
+
 export async function login(payload: LoginPayload): Promise<{ access_token: string; user: any }> {
     const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
@@ -39,4 +47,21 @@ export async function logout(): Promise<void> {
         sessionStorage.removeItem("token");
         sessionStorage.removeItem("user");
     }
+}
+
+export async function registerStudent(payload: RegisterStudentPayload): Promise<{ access_token: string; user: any }> {
+    const res = await fetch(`${API_URL}/api/register-student`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+        throw new Error((await res.json()).message || "Registration failed");
+    }
+
+    const data = await res.json();
+    return data;
 }

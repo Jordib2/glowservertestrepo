@@ -15,6 +15,7 @@ class SignupIn(BaseModel):
     name: str = Field(min_length=2, max_length=50)
     username: str = Field(min_length=3, max_length=30, pattern="^[a-zA-Z0-9_]+$")
     password: str = Field(min_length=6, max_length=100)
+    confirm_password: str = Field(min_length=6, max_length=100)
     role: str = Field(pattern="^(teacher|student)$")
     class_name: str = Field(min_length=2, max_length=3)
     @field_validator("role")
@@ -23,6 +24,13 @@ class SignupIn(BaseModel):
         if v not in {"teacher", "student"}:
             raise ValueError("Role must be 'teacher' or 'student'")
         return v
+    
+class RegisterStudentIn(BaseModel):
+    name: str = Field(min_length=2, max_length=50)
+    username: str = Field(min_length=3, max_length=30, pattern="^[a-zA-Z0-9_]+$")
+    password: str = Field(min_length=6, max_length=100)
+    confirm_password: str = Field(min_length=6, max_length=100)
+    class_name: str = Field(min_length=2, max_length=3)
 
 
 @router.post("/login")
@@ -44,3 +52,10 @@ async def signup(signup_data: SignupIn):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+@router.post("/register-student")
+async def register_student(register_data: RegisterStudentIn):
+    try:
+        return service.register_student(name=register_data.name, username=register_data.username, password=register_data.password, confirm_password=register_data.confirm_password, class_name=register_data.class_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

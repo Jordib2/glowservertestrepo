@@ -38,3 +38,16 @@ class AccountsService:
             "token_type": "bearer",
             "user": user,
         }
+        
+    def register_student(self, name: str, username: str, password: str, confirm_password: str, class_name: str) -> dict:
+        if self.accounts_repo.find_by_username(username, "student"):
+            raise ValueError("Username already exists")
+        if password != confirm_password:
+            raise ValueError("Passwords do not match")
+        user = self.accounts_repo.register_student(name, username, hash_password(password), "student", class_name)
+        token = sign_access_token(user["id"], user["role"])
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user": user,
+        }

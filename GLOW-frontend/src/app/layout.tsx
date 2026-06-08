@@ -11,7 +11,8 @@ export default function Layout() {
     "/",
     "/user-login",
     "/review-export-collage",
-    "/collage-editor"
+    "/collage-editor",
+    "/student-register"
   ];
 
   const shouldShowNavBar = !hideNavBarPaths.includes(location.pathname);
