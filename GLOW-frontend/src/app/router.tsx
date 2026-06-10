@@ -11,6 +11,7 @@ import TeacherDiscoveryPage from "../features/collage-generator/pages/TeacherDis
 import TeacherProfilePage from "../features/collage-generator/pages/TeacherProfilePage.tsx";
 import { MyVideosPage } from "../features/collage-generator/pages/MyVideosPage";
 import StudentRegister from "../features/accounts/StudentRegister.tsx";
+import GuidebookPage from "../features/collage-generator/pages/GuidebookPage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
             {
                 path: "review-export-collage",
                 element: <CollageReviewExportPage />
+            },
+            {
+                path: "guidebook",
+                element: <GuidebookPage />
             },
             {
                 path: "image-upload",

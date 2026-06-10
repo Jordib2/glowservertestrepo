@@ -29,7 +29,7 @@ export default function UserLogin() {
             const { access_token, user } = await login(payload);
             sessionStorage.setItem("token", access_token);
             sessionStorage.setItem("user", JSON.stringify(user));
-            navigate("/image-upload");
+            navigate("/guidebook");
         } catch (err) {
             console.error("Login failed:", err);
             setError("Invalid credentials");

@@ -22,7 +22,7 @@ export default function TeacherDiscoveryPage() {
 
   const handleUploadWork = () => {
     if (!selectedClass) return;
-    navigate("/image-upload", {
+    navigate("/guidebook", {
       state: { selectedClass }
     });
   };

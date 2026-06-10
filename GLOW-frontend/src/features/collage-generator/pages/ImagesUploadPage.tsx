@@ -7,6 +7,7 @@ import { validateCutout } from "../../../shared/lib/validateCutout";
 import type { ValidationResult } from "../../../shared/lib/validateCutout";
 import MagicLoader from "../../../shared/components/MagicLoader";
 
+
 interface ImageItem {
   file: File;
   preview: string;
