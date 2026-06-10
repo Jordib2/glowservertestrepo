@@ -12,6 +12,10 @@ import TeacherProfilePage from "../features/collage-generator/pages/TeacherProfi
 import { MyVideosPage } from "../features/collage-generator/pages/MyVideosPage";
 import StudentRegister from "../features/accounts/StudentRegister.tsx";
 import GuidebookPage from "../features/collage-generator/pages/GuidebookPage.tsx";
+import StudentHomePage from "../features/collage-generator/pages/StudentHomePage.tsx";
+import StudentProfilePage from "../features/collage-generator/pages/StudentProfilePage.tsx";
+import StudentCutoutPage from "../features/collage-generator/pages/StudentCutoutPage.tsx";
+import StudentCollagesPage from "../features/collage-generator/pages/StudentCollagesPage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -65,8 +69,24 @@ export const router = createBrowserRouter([
             {
                 path: "student-register",
                 element: <StudentRegister />
-            }
+            },
+            {
 
+                path: "student-home",
+                element: <StudentHomePage />
+            },
+            {
+                path: "student-profile",
+                element: <StudentProfilePage />
+            },
+            {
+                path: "student-cutout",
+                element: <StudentCutoutPage />
+            },
+            {
+                path: "student-collages",
+                element: <StudentCollagesPage />
+            }
         ]
     }
 ]);
