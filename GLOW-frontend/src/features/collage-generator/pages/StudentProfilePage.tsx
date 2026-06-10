@@ -6,6 +6,7 @@ export default function StudentProfilePage() {
   const navigate = useNavigate();
   const user = sessionStorage.getItem("user");
   const studentName = user ? JSON.parse(user).name : "Student Name";
+  const studentClass = user ? JSON.parse(user).class_name : "Unknown Class";
 
   const handleLogout = async () => {
       await logout();
@@ -20,7 +21,7 @@ export default function StudentProfilePage() {
 
         <div className="flex flex-col items-center w-full max-w-sm relative">
           {/* Profile Picture */}
-          <div className="w-48 h-56 rounded-[50%] overflow-hidden mb-6 relative z-10 bg-white/10 backdrop-blur-sm border border-white/10">
+          <div className="w-48 h-56 rounded-[50%] overflow-hidden mb-6 relative z-10">
             <img 
               src={profileImage} 
               alt="Student Profile" 
@@ -33,7 +34,7 @@ export default function StudentProfilePage() {
             {studentName}
           </h2>
           <p className="text-white/80 font-sans text-sm tracking-widest uppercase bg-white/10 px-5 py-2 rounded-full border border-white/20">
-            5E Class
+            {studentClass} Class
           </p>
         </div>
         

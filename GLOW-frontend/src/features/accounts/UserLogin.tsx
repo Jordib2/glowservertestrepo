@@ -29,7 +29,11 @@ export default function UserLogin() {
             const { access_token, user } = await login(payload);
             sessionStorage.setItem("token", access_token);
             sessionStorage.setItem("user", JSON.stringify(user));
-            navigate("/guidebook");
+            if (role === "student") {
+                navigate("/student-profile");
+            } else if (role === "teacher") {
+                navigate("/teacher-profile");
+            }
         } catch (err) {
             console.error("Login failed:", err);
             setError("Invalid credentials");

@@ -47,7 +47,6 @@ export default function TeacherDiscoveryPage() {
   };
 
   const handleUploadWork = () => {
-    if (!selectedSchool || !selectedClass) return;
     navigate("/guidebook", {
       state: { selectedSchool, selectedClass }
     });
@@ -134,7 +133,6 @@ export default function TeacherDiscoveryPage() {
         <button
           type="button"
           onClick={handleUploadWork}
-          disabled={!selectedClass}
           className="w-full h-44 rounded-[26px] bg-cover bg-center shadow-lg transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 relative group"
           style={{ backgroundImage: `url(${buttonBg})` }}
         >
