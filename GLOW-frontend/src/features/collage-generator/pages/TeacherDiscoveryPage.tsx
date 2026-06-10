@@ -47,14 +47,18 @@ export default function TeacherDiscoveryPage() {
   };
 
   const handleUploadWork = () => {
-    navigate("/guidebook", {
-      state: { selectedSchool, selectedClass }
-    });
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      navigate("/guidebook", { state: { selectedSchool, selectedClass } });
+    } else {
+      navigate("/image-upload", { state: { selectedSchool, selectedClass } });
+    }
   };
 
   return (
     <div className="mt-5 max-w-md mx-auto px-4 md:px-6 pt-4 pb-36 flex flex-col items-center">
-      
+
       {/* School dropdown */}
       <div className="w-full mb-6 flex flex-col items-center">
         <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
