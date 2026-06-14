@@ -1,19 +1,11 @@
-import type { Role } from "../../shared/types/Role.ts";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { login } from "../../shared/services/accountService.ts";
+import { registerStudent } from "../../shared/services/accountService";
 
-export default function UserLogin() {
-    const role = sessionStorage.getItem("role") as Role | null;
-    const navigate = useNavigate();
+export default function StudentRegister() {
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
-
-    useEffect(() => {
-        if (!role) {
-            navigate("/user-role-selection");
-        }
-    }, [role, navigate]);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -21,22 +13,20 @@ export default function UserLogin() {
         setSubmitting(true);
         const formData = new FormData(e.currentTarget);
         const payload = {
-            role: role?.toLowerCase() ?? null,
+            name: formData.get("name"),
             username: formData.get("username"),
+            class_name: formData.get("class_name"),
             password: formData.get("password"),
+            confirm_password: formData.get("confirm_password"),
         };
         try {
-            const { access_token, user } = await login(payload);
+            const { access_token, user } = await registerStudent(payload);
             sessionStorage.setItem("token", access_token);
             sessionStorage.setItem("user", JSON.stringify(user));
-            if (role === "student") {
-                navigate("/student-profile");
-            } else if (role === "teacher") {
-                navigate("/teacher-profile");
-            }
+            navigate("/image-upload"); // change when student pages are done
         } catch (err) {
-            console.error("Login failed:", err);
-            setError("Invalid credentials");
+            console.error("Registration failed:", err);
+            setError("Registration failed. Please check your details and try again.");
         } finally {
             setSubmitting(false);
         }
@@ -49,15 +39,14 @@ export default function UserLogin() {
                     CONNECT
                 </h1>
                 <img src="/vector.png" className="mt-[-1.5rem]" />
-                <p className="font-bold text-white/90 text-base sm:text-xl max-w-md text-center drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
+                <p className="mb-8 font-bold text-white/90 text-base sm:text-xl max-w-md text-center drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
                     Turn your class into one endless story
                 </p>
             </div>
 
-
             <div className="flex flex-col items-center w-full mt-auto bg-[#2a1a3a]/40 to-transparent py-8 sm:py-10 px-4 sm:px-6 rounded-[40px]">
                 <h2 className="mb-3 text-xl sm:text-2xl font-semibold tracking-wide text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
-                    Begin Your Tale
+                    Your New Chapter Begins Here...
                 </h2>
 
                 <form
@@ -80,6 +69,21 @@ export default function UserLogin() {
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                         <label
+                            htmlFor="name"
+                            className="sm:w-28 shrink-0 text-white font-bold text-base sm:text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                        >
+                            Name
+                        </label>
+                        <input
+                            id="name"
+                            name="name"
+                            placeholder="What is your name?"
+                            className="w-full px-4 py-2 rounded-[20px] bg-white/40 text-base text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
+                        />
+                    </div>
+
+                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <label
                             htmlFor="username"
                             className="sm:w-28 shrink-0 text-white font-bold text-base sm:text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
                         >
@@ -88,12 +92,27 @@ export default function UserLogin() {
                         <input
                             id="username"
                             name="username"
-                            placeholder="Who seeks entry?"
+                            placeholder="Create a username?"
                             className="w-full px-4 py-2 rounded-[20px] bg-white/40 text-base text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
                         />
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-4">
+                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <label
+                            htmlFor="class_name"
+                            className="sm:w-28 shrink-0 text-white font-bold text-base sm:text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                        >
+                            Class Name
+                        </label>
+                        <input
+                            id="class_name"
+                            name="class_name"
+                            placeholder="What is your class?"
+                            className="w-full px-4 py-2 rounded-[20px] bg-white/40 text-base text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
+                        />
+                    </div>
+
+                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                         <label
                             htmlFor="password"
                             className="sm:w-28 shrink-0 text-white font-bold text-base sm:text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
@@ -109,6 +128,22 @@ export default function UserLogin() {
                         />
                     </div>
 
+                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <label
+                            htmlFor="confirm_password"
+                            className="sm:w-28 shrink-0 text-white font-bold text-base sm:text-lg drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+                        >
+                            Confirm Secret Code
+                        </label>
+                        <input
+                            id="confirm_password"
+                            name="confirm_password"
+                            type="password"
+                            placeholder="••••••••"
+                            className="w-full px-4 py-2 rounded-[20px] bg-white/40 text-base text-[#2a1a3a] placeholder-[#6a5380] outline-none focus:bg-white/60 focus:shadow-[0_0_14px_rgba(168,128,222,0.5)]"
+                        />
+                    </div>
+
                     <button
                         type="submit"
                         disabled={submitting}
@@ -117,21 +152,19 @@ export default function UserLogin() {
                             background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)",
                         }}
                     >
-                        {submitting ? "Opening the door…" : "Step Into the Story"}
+                        {submitting ? "Opening the door…" : "Begin Your Story"}
                     </button>
                 </form>
 
-                {role === "student" && (
-                    <p className="text-white/80 text-sm mt-2 mb-2">
-                        Don't have an account?{" "}
-                        <button
-                            onClick={() => navigate("/student-register")}
-                            className="text-purple-200 underline underline-offset-2 decoration-purple-300 hover:text-white hover:decoration-white focus:outline-none font-semibold transition-colors"
-                        >
-                            Sign up here →
-                        </button>
-                    </p>
-                )}
+                <p className="text-white/80 text-sm mt-2 mb-2">
+                    Already have an account?{" "}
+                    <button
+                        onClick={() => navigate("/user-login")}
+                        className="text-purple-200 underline underline-offset-2 decoration-purple-300 hover:text-white hover:decoration-white focus:outline-none font-semibold transition-colors"
+                    >
+                        Log in here →
+                    </button>
+                </p>
 
                 <button
                     onClick={() => navigate("/user-role-selection")}
@@ -141,5 +174,5 @@ export default function UserLogin() {
                 </button>
             </div>
         </div>
-    );
+    )
 }

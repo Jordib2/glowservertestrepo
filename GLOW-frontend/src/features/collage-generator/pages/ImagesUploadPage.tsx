@@ -1,6 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateVideo } from "../../../shared/services/videoService";
+import { getSchools } from "../../../shared/services/schoolService";
+import type { School } from "../../../shared/types/School";
+import { API_URL } from "../../../shared/services/api";
 import cameraImage from "../../../assets/camera.png";
 import CameraCapture from "../../../shared/components/CameraCapture";
 import { validateCutout } from "../../../shared/lib/validateCutout";
@@ -26,6 +29,20 @@ export default function ImagesUploadPage() {
   const [replaceTargetId, setReplaceTargetId] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // School & Class state
+  const [schools, setSchools] = useState<School[]>([]);
+  const [selectedSchool, setSelectedSchool] = useState("");
+  const [classInput, setClassInput] = useState("");
+  const [showSchoolClassModal, setShowSchoolClassModal] = useState(false);
+
+  // Fetch schools on mount
+  useEffect(() => {
+    getSchools()
+      .then(data => setSchools(data))
+      .catch(console.error);
+  }, []);
+
+  // ----- Image handling (unchanged) -----
   const processFile = async (file: File, idToReplace?: string) => {
     const reader = new FileReader();
     reader.onload = async () => {
@@ -71,22 +88,49 @@ export default function ImagesUploadPage() {
     images.length > 0 &&
     images.every((img) => !img.validating && img.validationResult?.isValid === true);
 
+  // ----- Handle Continue (open modal) -----
+  const handleContinue = () => {
+    if (!allValid) return;
+    setShowSchoolClassModal(true);
+  };
+
+  // ----- Generate + auto-export -----
   const handleGenerate = async () => {
     if (!allValid) return;
+    if (!selectedSchool.trim() || !classInput.trim()) {
+      alert("Please select a school and enter a class name.");
+      return;
+    }
     setIsGenerating(true);
     setProgress(0);
     setGenerateMessage(null);
+    setShowSchoolClassModal(false);
     try {
       const formData = new FormData();
       images.forEach((img) => formData.append("images", img.file));
 
-      // callback krijgt (frame, total) – precies zoals het vroeger was
       const result = await generateVideo(formData, (frame, total) => {
         setProgress(Math.round((frame / total) * 300));
       });
 
       setProgress(300);
       await new Promise((res) => setTimeout(res, 800));
+
+      // Auto-export: link video to school/class in background
+      const token = sessionStorage.getItem("token");
+      fetch(`${API_URL}/api/export-info`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          video_id: result.video_id,
+          school_name: selectedSchool.trim(),
+          class_name: classInput.trim()
+        })
+      }).catch(err => console.warn("Auto-export failed, but video is generated", err));
+
       navigate("/collage-editor", {
         state: {
           videoUrl: result.video_url,
@@ -99,12 +143,12 @@ export default function ImagesUploadPage() {
     }
   };
 
-
   return (
-      <div className="mt-10 w-full px-4 md:px-8">
+    <div className="mt-10 w-full px-4 md:px-8">
 
       <h1 className="text-2xl md:text-4xl font-serif text-center mb-10 text-white">Upload Student Work</h1>
 
+      {/* ----- Upload area ----- */}
       <div className="max-w-md mx-auto bg-white/90 backdrop-blur-xl rounded-[28px] border border-white/40 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.6)] p-6 text-center">
         <div className="flex justify-center mb-4">
           <button type="button" onClick={() => { setReplaceTargetId(null); setIsCameraOpen(true); }}
@@ -191,12 +235,12 @@ export default function ImagesUploadPage() {
 
           {allValid && (
             <div className="mt-8 text-center">
-              <button type="button" onClick={handleGenerate} disabled={isGenerating}
+              <button type="button" onClick={handleContinue} disabled={isGenerating}
                 className="px-12 py-5 text-white text-xl font-semibold rounded-[20px] transition"
                 style={{ background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)", opacity: isGenerating ? 0.7 : 1, cursor: isGenerating ? "not-allowed" : "pointer" }}>
-                {isGenerating ? "Generating..." : "Start the magic!"}
+                Continue
               </button>
-              <p className="mt-4 text-white text-sm font-medium">Clicking this button will generate a collage video.</p>
+              <p className="mt-4 text-white text-sm font-medium">All images look good! Click to continue.</p>
               {generateMessage && <p className="mt-3 text-green-200 font-medium">{generateMessage}</p>}
             </div>
           )}
@@ -212,6 +256,75 @@ export default function ImagesUploadPage() {
         onClose={() => { setIsCameraOpen(false); setReplaceTargetId(null); }}
         onCapture={handleCameraCapture}
       />
+
+      {/* School & Class Modal */}
+      {showSchoolClassModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-b from-[#1a0a2e] to-[#2d1b4e] rounded-[28px] border border-white/20 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.8)] p-8 max-w-md w-full">
+            <h2 className="text-2xl md:text-3xl font-serif text-center mb-8 text-white">Select School & Class</h2>
+
+            {/* School Searchable Input */}
+            <div className="mb-6">
+              <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
+                Choose your school
+              </label>
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  list="school-list-modal"
+                  value={selectedSchool}
+                  onChange={(e) => setSelectedSchool(e.target.value)}
+                  placeholder="Type to search..."
+                  className="w-full rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 text-white text-center text-lg px-4 py-3 outline-none focus:bg-white/20 placeholder-white/40"
+                />
+                <datalist id="school-list-modal">
+                  {schools.map((s) => (
+                    <option key={s.id} value={s.school_name}>{s.school_name}</option>
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            {/* Class Text Input */}
+            <div className="mb-8">
+              <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
+                Class name
+              </label>
+              <input
+                type="text"
+                value={classInput}
+                onChange={(e) => setClassInput(e.target.value)}
+                placeholder="e.g. 5E, 4A..."
+                className="w-full rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 text-white text-center text-lg px-4 py-3 outline-none focus:bg-white/20 placeholder-white/40"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-4 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSchoolClassModal(false);
+                  setSelectedSchool("");
+                  setClassInput("");
+                }}
+                className="px-6 py-3 text-white rounded-[20px] text-sm font-semibold border border-white/30 hover:bg-white/10 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={!selectedSchool.trim() || !classInput.trim() || isGenerating}
+                className="px-6 py-3 text-white text-md font-semibold rounded-[20px] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)" }}
+              >
+                {isGenerating ? "Generating..." : "Start the magic!"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isGenerating && <MagicLoader progress={progress} />}
     </div>

@@ -132,14 +132,27 @@ async def save_export_info(data: ExportInfoRequest, user: dict = Depends(get_cur
 
 
 @router.get("/my-videos")
-async def get_my_videos(user: dict = Depends(get_current_user)):
+async def get_my_videos(
+    user: dict = Depends(get_current_user),
+    school_name: str = None,
+    class_name: str = None
+):
     from app.core.db import get_db
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute(
-        "SELECT * FROM videos WHERE user_id = %s ORDER BY id DESC",
-        (user["id"],)
-    )
+
+    query = "SELECT * FROM videos WHERE user_id = %s"
+    params = [user["id"]]
+
+    if school_name:
+        query += " AND school_name = %s"
+        params.append(school_name)
+    if class_name:
+        query += " AND class_name = %s"
+        params.append(class_name)
+
+    query += " ORDER BY id DESC"
+    cursor.execute(query, params)
     videos = cursor.fetchall()
     cursor.close()
     db.close()
@@ -151,3 +164,33 @@ async def get_my_videos(user: dict = Depends(get_current_user)):
             v["video_path"] = f"{BASE_URL}/media/{path}" if not path.startswith("media/") else f"{BASE_URL}/{path}"
 
     return videos
+
+@router.delete("/videos/{video_id}")
+async def delete_video(video_id: int, user: dict = Depends(get_current_user)):
+    from app.core.db import get_db
+    db = get_db()
+    cursor = db.cursor()
+    # Only allow deletion of own videos
+    cursor.execute("DELETE FROM videos WHERE id = %s AND user_id = %s", (video_id, user["id"]))
+    if cursor.rowcount == 0:
+        cursor.close()
+        db.close()
+        raise HTTPException(status_code=404, detail="Video not found or not yours")
+    db.commit()
+    cursor.close()
+    db.close()
+    return {"message": "Video deleted"}
+
+@router.get("/my-classes")
+async def get_my_classes(school_name: str, user: dict = Depends(get_current_user)):
+    from app.core.db import get_db
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT DISTINCT class_name FROM videos WHERE user_id = %s AND school_name = %s AND class_name IS NOT NULL AND class_name != '' ORDER BY class_name",
+        (user["id"], school_name)
+    )
+    classes = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    db.close()
+    return {"classes": classes}

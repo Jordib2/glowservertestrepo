@@ -10,19 +10,19 @@ class AccountsRepository:
         
         try:
             cursor.execute(
-                "SELECT id, name, username, password, role FROM users WHERE username = %s AND role = %s",
+                "SELECT id, name, username, password, role, class_name FROM users WHERE username = %s AND role = %s",
                 (username, role)
             )
             result = cursor.fetchone()
             if not result:
                 return None
-            return dict(zip(["id", "name", "username", "password", "role"], result))
+            return dict(zip(["id", "name", "username", "password", "role", "class_name"], result))
         finally:
             cursor.close()
             db.close()
             
             
-    def create_user(self, name: str, username: str, password: str, role: str) -> dict:
+    def create_user(self, name: str, username: str, password: str, role: str, class_name: str) -> dict:
         if role not in VALID_ROLES:
             raise ValueError(f"Invalid role: {role}")
         
@@ -31,8 +31,8 @@ class AccountsRepository:
         
         try:
             cursor.execute(
-                "INSERT INTO users (name, username, password, role) VALUES (%s, %s, %s, %s)",
-                (name, username, password, role)
+                "INSERT INTO users (name, username, password, role, class_name) VALUES (%s, %s, %s, %s, %s)",
+                (name, username, password, role, class_name)
             )
             db.commit()
             user_id = cursor.lastrowid
@@ -42,9 +42,17 @@ class AccountsRepository:
                 "id": user_id,
                 "name": name,
                 "username": username,
-                "role": role
+                "role": role,
+                "class_name": class_name
             }
         finally:
             cursor.close()
             db.close() 
+            
+    
+    def register_student(self, name: str, username: str, password: str, role: str, class_name: str) -> dict:
+        if role != "student":
+            raise ValueError("Role must be 'student' for student registration")
+        
+        return self.create_user(name=name, username=username, password=password, role=role, class_name=class_name)
             

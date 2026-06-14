@@ -9,7 +9,13 @@ import UserRoleSelection from "../features/accounts/UserRoleSelection.tsx";
 import UserLogin from "../features/accounts/UserLogin.tsx";
 import TeacherDiscoveryPage from "../features/collage-generator/pages/TeacherDiscoveryPage.tsx";
 import TeacherProfilePage from "../features/collage-generator/pages/TeacherProfilePage.tsx";
-import { MyVideosPage } from "../features/collage-generator/pages/MyVideosPage";;
+import { MyVideosPage } from "../features/collage-generator/pages/MyVideosPage";
+import StudentRegister from "../features/accounts/StudentRegister.tsx";
+import GuidebookPage from "../features/collage-generator/pages/GuidebookPage.tsx";
+import StudentHomePage from "../features/collage-generator/pages/StudentHomePage.tsx";
+import StudentProfilePage from "../features/collage-generator/pages/StudentProfilePage.tsx";
+import StudentCutoutPage from "../features/collage-generator/pages/StudentCutoutPage.tsx";
+import StudentCollagesPage from "../features/collage-generator/pages/StudentCollagesPage.tsx";
 
 export const router = createBrowserRouter([
     {
@@ -31,6 +37,10 @@ export const router = createBrowserRouter([
             {
                 path: "review-export-collage",
                 element: <CollageReviewExportPage />
+            },
+            {
+                path: "guidebook",
+                element: <GuidebookPage />
             },
             {
                 path: "image-upload",
@@ -55,8 +65,28 @@ export const router = createBrowserRouter([
             {
                 path: "my-videos",
                 element: <MyVideosPage />
+            },
+            {
+                path: "student-register",
+                element: <StudentRegister />
+            },
+            {
+
+                path: "student-home",
+                element: <StudentHomePage />
+            },
+            {
+                path: "student-profile",
+                element: <StudentProfilePage />
+            },
+            {
+                path: "student-cutout",
+                element: <StudentCutoutPage />
+            },
+            {
+                path: "student-collages",
+                element: <StudentCollagesPage />
             }
-    
         ]
     }
 ]);
