@@ -2,15 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import "./MagicLoader.css";
 
 const PROGRESS_QUOTES: { upTo: number; text: string }[] = [
-  { upTo: 60,  text: "The magic starts ✨" },
-  { upTo: 90,  text: "Your magical collage is gathering light…" },
-  { upTo: 120, text: "A little patience for a little magic…" },
-  { upTo: 150, text: "The cutouts are learning to dance…" },
-  { upTo: 180, text: "Your fantasy world is almost ready…" },
-  { upTo: 210, text: "Magic takes a moment to appear…" },
-  { upTo: 240, text: "Wonder is being stitched frame by frame…" },
-  { upTo: 270, text: "Almost ready to reveal the magic…" },
-  { upTo: 300, text: "Almost ready to reveal the magic…" },
+  { upTo: 10, text: "The magic starts ✨" },
+  { upTo: 20, text: "Your magical collage is gathering light…" },
+  { upTo: 30, text: "A little patience for a little magic…" },
+  { upTo: 40, text: "The cutouts are learning to dance…" },
+  { upTo: 50, text: "Your fantasy world is almost ready…" },
+  { upTo: 60, text: "Magic takes a moment to appear…" },
+  { upTo: 70, text: "Wonder is being stitched frame by frame…" },
+  { upTo: 80, text: "Almost ready to reveal the magic…" },
+  { upTo: 90, text: "The magic is almost here!" },
+  { upTo: 100, text: "Your magical collage is ready!" },
 ];
 
 function getQuote(progress: number): string {
@@ -23,7 +24,13 @@ function getQuote(progress: number): string {
 export default function MagicLoader({ progress }: { progress: number }) {
   const [quoteVisible, setQuoteVisible] = useState(true);
   const prevQuoteRef = useRef("");
-  const currentQuote = getQuote(progress);
+
+  const normalizedProgress = Math.max(
+    0,
+    Math.min(100, ((progress - 30) / (300 - 30)) * 100)
+  );
+
+  const currentQuote = getQuote(normalizedProgress);
 
   useEffect(() => {
     if (prevQuoteRef.current && prevQuoteRef.current !== currentQuote) {
@@ -34,7 +41,7 @@ export default function MagicLoader({ progress }: { progress: number }) {
     prevQuoteRef.current = currentQuote;
   }, [currentQuote]);
 
-  const pct = Math.min(100, Math.round((progress / 300) * 100));
+  const pct = Math.round(normalizedProgress);
 
   return (
     <div className="ml-overlay">
@@ -62,7 +69,7 @@ export default function MagicLoader({ progress }: { progress: number }) {
           <div className="ml-progress-track">
             <div className="ml-progress-fill" style={{ width: `${pct}%` }} />
           </div>
-          <div className="ml-progress-label">{progress} / 300</div>
+          <div className="ml-progress-label">{progress/3} / 100</div>
         </div>
       </div>
     </div>
