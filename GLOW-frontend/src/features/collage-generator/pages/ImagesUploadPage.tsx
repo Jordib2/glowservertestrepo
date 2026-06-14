@@ -33,6 +33,7 @@ export default function ImagesUploadPage() {
   const [schools, setSchools] = useState<School[]>([]);
   const [selectedSchool, setSelectedSchool] = useState("");
   const [classInput, setClassInput] = useState("");
+  const [showSchoolClassModal, setShowSchoolClassModal] = useState(false);
 
   // Fetch schools on mount
   useEffect(() => {
@@ -87,6 +88,12 @@ export default function ImagesUploadPage() {
     images.length > 0 &&
     images.every((img) => !img.validating && img.validationResult?.isValid === true);
 
+  // ----- Handle Continue (open modal) -----
+  const handleContinue = () => {
+    if (!allValid) return;
+    setShowSchoolClassModal(true);
+  };
+
   // ----- Generate + auto-export -----
   const handleGenerate = async () => {
     if (!allValid) return;
@@ -97,6 +104,7 @@ export default function ImagesUploadPage() {
     setIsGenerating(true);
     setProgress(0);
     setGenerateMessage(null);
+    setShowSchoolClassModal(false);
     try {
       const formData = new FormData();
       images.forEach((img) => formData.append("images", img.file));
@@ -140,46 +148,7 @@ export default function ImagesUploadPage() {
 
       <h1 className="text-2xl md:text-4xl font-serif text-center mb-10 text-white">Upload Student Work</h1>
 
-      {/* ----- School & Class Selectors ----- */}
-      <div className="max-w-md mx-auto flex flex-col gap-4 mb-8">
-        {/* School Searchable Input */}
-        <div>
-          <label className="block text-white/80 text-center text-xs tracking-widest mb-2 font-sans font-medium uppercase">
-            Choose your school
-          </label>
-          <div className="relative w-full">
-            <input
-              type="text"
-              list="school-list"
-              value={selectedSchool}
-              onChange={(e) => setSelectedSchool(e.target.value)}
-              placeholder="Type to search..."
-              className="w-full rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 text-white text-center text-lg px-4 py-3 outline-none focus:bg-white/20 placeholder-white/40"
-            />
-            <datalist id="school-list">
-              {schools.map((s) => (
-                <option key={s.id} value={s.school_name}>{s.school_name}</option>
-              ))}
-            </datalist>
-          </div>
-        </div>
-
-        {/* Class Text Input */}
-        <div>
-          <label className="block text-white/80 text-center text-xs tracking-widest mb-2 font-sans font-medium uppercase">
-            Class name
-          </label>
-          <input
-            type="text"
-            value={classInput}
-            onChange={(e) => setClassInput(e.target.value)}
-            placeholder="e.g. 5E, 4A..."
-            className="w-full rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 text-white text-center text-lg px-4 py-3 outline-none focus:bg-white/20 placeholder-white/40"
-          />
-        </div>
-      </div>
-
-      {/* ----- Upload area (unchanged) ----- */}
+      {/* ----- Upload area ----- */}
       <div className="max-w-md mx-auto bg-white/90 backdrop-blur-xl rounded-[28px] border border-white/40 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.6)] p-6 text-center">
         <div className="flex justify-center mb-4">
           <button type="button" onClick={() => { setReplaceTargetId(null); setIsCameraOpen(true); }}
@@ -266,12 +235,12 @@ export default function ImagesUploadPage() {
 
           {allValid && (
             <div className="mt-8 text-center">
-              <button type="button" onClick={handleGenerate} disabled={isGenerating}
+              <button type="button" onClick={handleContinue} disabled={isGenerating}
                 className="px-12 py-5 text-white text-xl font-semibold rounded-[20px] transition"
                 style={{ background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)", opacity: isGenerating ? 0.7 : 1, cursor: isGenerating ? "not-allowed" : "pointer" }}>
-                {isGenerating ? "Generating..." : "Start the magic!"}
+                Continue
               </button>
-              <p className="mt-4 text-white text-sm font-medium">Clicking this button will generate a collage video.</p>
+              <p className="mt-4 text-white text-sm font-medium">All images look good! Click to continue.</p>
               {generateMessage && <p className="mt-3 text-green-200 font-medium">{generateMessage}</p>}
             </div>
           )}
@@ -287,6 +256,75 @@ export default function ImagesUploadPage() {
         onClose={() => { setIsCameraOpen(false); setReplaceTargetId(null); }}
         onCapture={handleCameraCapture}
       />
+
+      {/* School & Class Modal */}
+      {showSchoolClassModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-b from-[#1a0a2e] to-[#2d1b4e] rounded-[28px] border border-white/20 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.8)] p-8 max-w-md w-full">
+            <h2 className="text-2xl md:text-3xl font-serif text-center mb-8 text-white">Select School & Class</h2>
+
+            {/* School Searchable Input */}
+            <div className="mb-6">
+              <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
+                Choose your school
+              </label>
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  list="school-list-modal"
+                  value={selectedSchool}
+                  onChange={(e) => setSelectedSchool(e.target.value)}
+                  placeholder="Type to search..."
+                  className="w-full rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 text-white text-center text-lg px-4 py-3 outline-none focus:bg-white/20 placeholder-white/40"
+                />
+                <datalist id="school-list-modal">
+                  {schools.map((s) => (
+                    <option key={s.id} value={s.school_name}>{s.school_name}</option>
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            {/* Class Text Input */}
+            <div className="mb-8">
+              <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
+                Class name
+              </label>
+              <input
+                type="text"
+                value={classInput}
+                onChange={(e) => setClassInput(e.target.value)}
+                placeholder="e.g. 5E, 4A..."
+                className="w-full rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 text-white text-center text-lg px-4 py-3 outline-none focus:bg-white/20 placeholder-white/40"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-4 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSchoolClassModal(false);
+                  setSelectedSchool("");
+                  setClassInput("");
+                }}
+                className="px-6 py-3 text-white rounded-[20px] text-sm font-semibold border border-white/30 hover:bg-white/10 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleGenerate}
+                disabled={!selectedSchool.trim() || !classInput.trim() || isGenerating}
+                className="px-6 py-3 text-white text-md font-semibold rounded-[20px] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: "linear-gradient(135deg, #5E1E95 0%, #C594EF 100%)" }}
+              >
+                {isGenerating ? "Generating..." : "Start the magic!"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isGenerating && <MagicLoader progress={progress} />}
     </div>

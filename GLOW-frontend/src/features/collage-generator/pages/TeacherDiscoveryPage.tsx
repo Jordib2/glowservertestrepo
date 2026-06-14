@@ -1,138 +1,24 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSchools } from "../../../shared/services/schoolService";
-import type { School } from "../../../shared/types/School";
-import { API_URL } from "../../../shared/services/api";
 import buttonBg from "../../../assets/buttonBg.png";
 
 export default function TeacherDiscoveryPage() {
   const navigate = useNavigate();
-  const [schools, setSchools] = useState<School[]>([]);
-  const [selectedSchool, setSelectedSchool] = useState("");
-  const [classes, setClasses] = useState<string[]>([]);
-  const [selectedClass, setSelectedClass] = useState("");
-  const [loadingClasses, setLoadingClasses] = useState(false);
-
-  useEffect(() => {
-    getSchools()
-      .then(data => setSchools(data))
-      .catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (!selectedSchool) {
-      setClasses([]);
-      setSelectedClass("");
-      return;
-    }
-    const token = sessionStorage.getItem("token");
-    setLoadingClasses(true);
-    fetch(`${API_URL}/api/my-classes?school_name=${encodeURIComponent(selectedSchool)}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setClasses(data.classes || []);
-        setSelectedClass(""); // reset class when school changes
-      })
-      .catch(console.error)
-      .finally(() => setLoadingClasses(false));
-  }, [selectedSchool]);
-
-  const handleViewWork = () => {
-    if (!selectedSchool || !selectedClass) return;
-    navigate("/my-videos", {
-      state: { schoolName: selectedSchool, className: selectedClass }
-    });
-  };
 
   const handleUploadWork = () => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (isMobile) {
-      navigate("/guidebook", { state: { selectedSchool, selectedClass } });
+      navigate("/guidebook");
     } else {
-      navigate("/image-upload", { state: { selectedSchool, selectedClass } });
+      navigate("/image-upload");
     }
   };
 
+
   return (
     <div className="mt-5 max-w-md mx-auto px-4 md:px-6 pt-4 pb-36 flex flex-col items-center">
-
-      {/* School dropdown */}
-      <div className="w-full mb-6 flex flex-col items-center">
-        <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
-          Select a school
-        </label>
-        <div className="relative w-full max-w-xs group cursor-pointer">
-          <div className="absolute inset-0 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-300 group-hover:bg-white/15"></div>
-          <select
-            value={selectedSchool}
-            onChange={(e) => setSelectedSchool(e.target.value)}
-            className="relative w-full appearance-none bg-transparent text-white font-serif text-xl text-center pl-6 pr-12 py-4 outline-none cursor-pointer z-10"
-          >
-            <option value="">Choose a school</option>
-            {schools.map((s) => (
-              <option key={s.id} value={s.school_name} className="text-slate-900 bg-white">
-                {s.school_name}
-              </option>
-            ))}
-          </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-10 w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white backdrop-blur-md transition-transform duration-300 group-hover:translate-y-[1px]">
-            <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      {/* Class dropdown */}
-      <div className="w-full mb-8 flex flex-col items-center">
-        <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
-          Select a class
-        </label>
-        {!selectedSchool ? (
-          <p className="text-white/50 text-sm italic">First select a school</p>
-        ) : loadingClasses ? (
-          <p className="text-white/50 text-sm">Loading classes…</p>
-        ) : classes.length === 0 ? (
-          <p className="text-white/50 text-sm">No classes found for this school</p>
-        ) : (
-          <div className="relative w-full max-w-xs group cursor-pointer">
-            <div className="absolute inset-0 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-300 group-hover:bg-white/15"></div>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="relative w-full appearance-none bg-transparent text-white font-serif text-xl text-center pl-6 pr-12 py-4 outline-none cursor-pointer z-10"
-            >
-              <option value="">Choose a class</option>
-              {classes.map((cls) => (
-                <option key={cls} value={cls} className="text-slate-900 bg-white">{cls}</option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-10 w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white backdrop-blur-md transition-transform duration-300 group-hover:translate-y-[1px]">
-              <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-        )}
-      </div>
-
+      <h1 className="text-3xl md:text-5xl font-serif text-center mb-6 text-white">Create New Tales</h1>
       <div className="w-full grid gap-8">
-        <button
-          type="button"
-          onClick={handleViewWork}
-          disabled={!selectedClass}
-          className="w-full h-44 rounded-[26px] bg-cover bg-center shadow-lg transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 relative group"
-          style={{ backgroundImage: `url(${buttonBg})` }}
-        >
-          <div className="absolute bottom-4 right-4 bg-indigo-950/50 backdrop-blur-md border border-white/20 rounded-[20px] px-5 py-2.5 shadow-md">
-            <span className="text-white text-base font-medium font-sans">
-              View your class story
-            </span>
-          </div>
-        </button>
 
         <button
           type="button"
@@ -142,7 +28,7 @@ export default function TeacherDiscoveryPage() {
         >
           <div className="absolute bottom-4 right-4 bg-indigo-950/50 backdrop-blur-md border border-white/20 rounded-[20px] px-5 py-2.5 shadow-md">
             <span className="text-white text-base font-medium font-sans">
-              Upload Student Work
+              Upload Student Artwork
             </span>
           </div>
         </button>
