@@ -74,7 +74,7 @@ class VideoService:
             target = max(1, int(s["size"] * self._video_scale))
             scale = target / max(img.width, img.height)
             final_size = (max(1, int(img.width * scale)), max(1, int(img.height * scale)))
-            
+
             s["_image"] = img.resize(final_size, Image.LANCZOS)
             s["_cx"] = s["center_x"] * self._video_scale
             s["_cy"] = s["center_y"] * self._video_scale
@@ -134,7 +134,6 @@ class VideoService:
         BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
         video_url = f"{BASE_URL}/media/{relative_video_path}"
 
-        
         if progress_callback:
             progress_callback(total_frames, total_frames)
 
@@ -153,6 +152,7 @@ class VideoService:
 
         for s in sprites:
             cx, cy, angle, dyn_scale = self._animated(s, t)
+            base_angle = s["angle"]  # static design angle, unaffected by wobble
 
             tile = s["_image"]
             if abs(dyn_scale - 1.0) > 1e-3:
@@ -161,18 +161,30 @@ class VideoService:
                      max(1, int(tile.height * dyn_scale))),
                     Image.LANCZOS,
                 )
+
+            # Treat the cutout as pinned at its own bottom-center point.
+            # At rest (angle == base_angle) this reduces exactly to (cx, cy) —
+            # the picker-authored center — and only drifts while the tilt
+            # animation is actively swinging away from that rest angle.
+            half_h = tile.height / 2.0
+            base_rad = math.radians(base_angle)
+            cur_rad = math.radians(angle)
+            center_x = cx + half_h * (math.sin(cur_rad) - math.sin(base_rad))
+            center_y = cy + half_h * (math.cos(base_rad) - math.cos(cur_rad))
+
             if angle != 0:
+                # angle is authored clockwise-positive (picker tool's SVG
+                # convention); PIL rotates counter-clockwise for positive
+                # values, so negate to match.
                 tile = tile.rotate(-angle, expand=True, resample=Image.BICUBIC)
 
-            screen_x = int(cx - camera_x)
-            screen_y = int(cy)
-            half_w = tile.width  // 2
-            half_h = tile.height // 2
+            screen_x = int(center_x - camera_x) - tile.width // 2
+            screen_y = int(center_y) - tile.height // 2
 
-            if (screen_x + half_w < 0 or screen_x - half_w > view_w or
-                screen_y + half_h < 0 or screen_y - half_h > view_h):
+            if (screen_x + tile.width < 0 or screen_x > view_w or
+                screen_y + tile.height < 0 or screen_y > view_h):
                 continue
 
-            frame.paste(tile, (screen_x - half_w, screen_y - half_h), tile)
+            frame.paste(tile, (screen_x, screen_y), tile)
 
         return frame

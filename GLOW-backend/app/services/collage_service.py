@@ -9,12 +9,9 @@ from app.persistence.repositories.collage_repository import CollageRepository
 
 
 ANIM_PARAMS = {
-    "tilt":  {"amp": (2, 6),      "freq": (0.15, 0.5)},
-    "tilt":  {"amp": (3, 7),      "freq": (0.15, 0.5)},
+    "tilt": {"amp": (2, 5), "freq": (0.08, 0.5)},
 }
 
-# Light randomness layered on top of each point's authored angle/size so
-# repeated points (when images cycle) don't look perfectly identical.
 ANGLE_JITTER = 5     # +/- degrees added to a point's hinted angle
 SIZE_JITTER = 0.06   # +/- fraction added to a point's hinted size
 
@@ -151,14 +148,18 @@ class CollageService:
         return collage_url
 
     def _render_preview(self, scene_data: dict, output_path: str):
+        """Render a static still of the scene at t=0 — useful as a thumbnail."""
         background = Image.open(scene_data["background_path"]).convert("RGBA")
         collage = background.copy()
         for s in scene_data["sprites"]:
             img = Image.open(s["image_path"]).convert("RGBA")
             img.thumbnail((int(s["size"]), int(s["size"])), Image.LANCZOS)
             if s["angle"] != 0:
-                img = img.rotate(s["angle"], expand=True, resample=Image.BICUBIC)
-            px = int(s["center_x"] - img.width // 2)
-            py = int(s["center_y"] - img.height // 2)
+                # angle is authored clockwise-positive (picker tool's SVG
+                # convention); PIL rotates counter-clockwise for positive
+                # values, so negate to match.
+                img = img.rotate(-s["angle"], expand=True, resample=Image.BICUBIC)
+            px = int(s["center_x"] - img.width / 2)
+            py = int(s["center_y"] - img.height / 2)
             collage.paste(img, (px, py), img)
         collage.save(output_path, "PNG")
