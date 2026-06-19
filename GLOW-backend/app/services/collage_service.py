@@ -9,10 +9,14 @@ from app.persistence.repositories.collage_repository import CollageRepository
 
 
 ANIM_PARAMS = {
-    "bob":   {"amp": (4, 12),      "freq": (0.15, 0.4)},   # pixels of vertical drift
-    "tilt":  {"amp": (4, 12),       "freq": (0.15, 0.5)},   # degrees of rotation wobble
-    "pulse": {"amp": (0.04, 0.09), "freq": (0.25, 0.6)},   # fraction of scale change
+    "tilt":  {"amp": (2, 6),      "freq": (0.15, 0.5)},
+    "tilt":  {"amp": (3, 7),      "freq": (0.15, 0.5)},
 }
+
+# Light randomness layered on top of each point's authored angle/size so
+# repeated points (when images cycle) don't look perfectly identical.
+ANGLE_JITTER = 5     # +/- degrees added to a point's hinted angle
+SIZE_JITTER = 0.06   # +/- fraction added to a point's hinted size
 
 
 def _random_anim() -> dict:
@@ -22,20 +26,13 @@ def _random_anim() -> dict:
         "type":  t,
         "amp":   random.uniform(*p["amp"]),
         "freq":  random.uniform(*p["freq"]),
-        "phase": random.uniform(0, 2 * math.pi),  # desync sprites
+        "phase": random.uniform(0, 2 * math.pi),
     }
 
 
 class CollageService:
     def __init__(self):
         self.collage_repo = CollageRepository()
-
-    def _overlaps(self, x, y, w, h, placed, gap):
-        for (px, py, pw, ph) in placed:
-            if (x < px + pw + gap and x + w + gap > px and
-                y < py + ph + gap and y + h + gap > py):
-                return True
-        return False
 
     def _resolve_local_path(self, url: str, base_media_dir: str) -> str:
         if '/media/' in url:
@@ -44,10 +41,47 @@ class CollageService:
             return url
         return os.path.join(base_media_dir, url.lstrip('/'))
 
+    def _load_placement_points(self, points_path: str, canvas_w: int, canvas_h: int) -> list:
+        """Load hand-authored {x, y, size, angle} points for this background.
+
+        If points were authored against a different canvas size than the
+        background image currently in use, rescale them proportionally so
+        they still line up with the artwork.
+        """
+        if not os.path.exists(points_path):
+            raise ValueError(
+                f"No placement points file found at {points_path}. "
+                "Create one with a 'points' list of {x, y, size, angle} entries."
+            )
+
+        with open(points_path) as f:
+            data = json.load(f)
+
+        points = data.get("points", [])
+        if not points:
+            raise ValueError(f"Placement points file at {points_path} has no points")
+
+        authored_canvas = data.get("canvas")
+        if authored_canvas and tuple(authored_canvas) != (canvas_w, canvas_h):
+            sx = canvas_w / authored_canvas[0]
+            sy = canvas_h / authored_canvas[1]
+            s_avg = (sx + sy) / 2
+            print(f"Rescaling placement points from {authored_canvas} to {(canvas_w, canvas_h)}")
+            points = [
+                {
+                    "x": p["x"] * sx,
+                    "y": p["y"] * sy,
+                    "size": p.get("size", 250) * s_avg,
+                    "angle": p.get("angle", 0),
+                }
+                for p in points
+            ]
+
+        return points
+
     def generate_collage(self, collage_id: int, image_urls: List[str]) -> str:
         base_media_dir = os.getenv("MEDIA_DIR", "media")
 
-        # Resolve and validate input image paths
         source_paths = []
         for url in image_urls:
             p = self._resolve_local_path(url, base_media_dir)
@@ -59,55 +93,39 @@ class CollageService:
         if not source_paths:
             raise ValueError("No valid images found")
 
-        # Background defines the canvas size
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         background_path = os.path.join(base_dir, "assets", "collage_background.png")
+        points_path = os.path.join(base_dir, "assets", "collage_background_points.json")
         background = Image.open(background_path).convert("RGBA")
         canvas_w, canvas_h = background.size
         print(f"Canvas: {canvas_w}x{canvas_h}")
 
-        IMG_SIZE = 250
-        GAP = -130
-        ANGLE = 30
-        MAX_ATTEMPTS = 1000
-        TARGET_COUNT = 280
-        print(f"Targeting ~{TARGET_COUNT} sprites, img={IMG_SIZE}px, gap={GAP}px")
+        points = self._load_placement_points(points_path, canvas_w, canvas_h)
+        print(f"Loaded {len(points)} placement points")
 
         sprites = []
-        placed_boxes = []
-        random.shuffle(source_paths)
         cycle = 0
-
-        for _ in range(TARGET_COUNT):
+        for point in points:
             if cycle % len(source_paths) == 0:
                 random.shuffle(source_paths)
             image_path = source_paths[cycle % len(source_paths)]
             cycle += 1
 
-            placed = False
-            for _ in range(MAX_ATTEMPTS):
-                x = random.randint(0, max(0, canvas_w - IMG_SIZE))
-                y = random.randint(0, max(0, canvas_h - IMG_SIZE))
-                if not self._overlaps(x, y, IMG_SIZE, IMG_SIZE, placed_boxes, GAP):
-                    placed_boxes.append((x, y, IMG_SIZE, IMG_SIZE))
-                    sprites.append({
-                        "image_path": image_path,
-                        "center_x": x + IMG_SIZE // 2,
-                        "center_y": y + IMG_SIZE // 2,
-                        "size":     IMG_SIZE,
-                        "angle":    random.uniform(-ANGLE, ANGLE),
-                        "scale":    1.0,
-                        "anim":     _random_anim(),
-                    })
-                    placed = True
-                    break
-            if not placed:
-                print(f"Canvas full after {len(sprites)} sprites")
-                break
+            base_angle = point.get("angle", 0)
+            base_size = point.get("size", 250)
+
+            sprites.append({
+                "image_path": image_path,
+                "center_x": point["x"],
+                "center_y": point["y"],
+                "size":     max(1, base_size * random.uniform(1 - SIZE_JITTER, 1 + SIZE_JITTER)),
+                "angle":    base_angle + random.uniform(-ANGLE_JITTER, ANGLE_JITTER),
+                "scale":    1.0,
+                "anim":     _random_anim(),
+            })
 
         print(f"Placed {len(sprites)} sprites total")
 
-        # Save scene JSON + a static preview PNG side by side
         collages_subdir = "collages"
         collages_dir = os.path.join(base_media_dir, collages_subdir)
         os.makedirs(collages_dir, exist_ok=True)
@@ -133,12 +151,11 @@ class CollageService:
         return collage_url
 
     def _render_preview(self, scene_data: dict, output_path: str):
-        """Render a static still of the scene at t=0 — useful as a thumbnail."""
         background = Image.open(scene_data["background_path"]).convert("RGBA")
         collage = background.copy()
         for s in scene_data["sprites"]:
             img = Image.open(s["image_path"]).convert("RGBA")
-            img.thumbnail((s["size"], s["size"]), Image.LANCZOS)
+            img.thumbnail((int(s["size"]), int(s["size"])), Image.LANCZOS)
             if s["angle"] != 0:
                 img = img.rotate(s["angle"], expand=True, resample=Image.BICUBIC)
             px = int(s["center_x"] - img.width // 2)

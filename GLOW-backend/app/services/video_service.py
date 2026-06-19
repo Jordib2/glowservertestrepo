@@ -82,7 +82,7 @@ class VideoService:
         self.video_dir.mkdir(parents=True, exist_ok=True)
 
         fps = 30
-        duration_seconds = 10
+        duration_seconds = 20
         total_frames = fps * duration_seconds
         max_x = scaled_w - video_width
         step_x = max_x / total_frames
@@ -162,7 +162,7 @@ class VideoService:
                     Image.LANCZOS,
                 )
             if angle != 0:
-                tile = tile.rotate(angle, expand=True, resample=Image.BICUBIC)
+                tile = tile.rotate(-angle, expand=True, resample=Image.BICUBIC)
 
             screen_x = int(cx - camera_x)
             screen_y = int(cy)
