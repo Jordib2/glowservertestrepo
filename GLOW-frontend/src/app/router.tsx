@@ -16,6 +16,7 @@ import StudentHomePage from "../features/collage-generator/pages/StudentHomePage
 import StudentProfilePage from "../features/collage-generator/pages/StudentProfilePage.tsx";
 import StudentCutoutPage from "../features/collage-generator/pages/StudentCutoutPage.tsx";
 import StudentCollagesPage from "../features/collage-generator/pages/StudentCollagesPage.tsx";
+import ProtectedRoute from "../shared/components/ProtectedRoute";
 
 export const router = createBrowserRouter([
     {
@@ -32,11 +33,11 @@ export const router = createBrowserRouter([
             },
             {
                 path: "collage-editor",
-                element: <CollageEditorPage />
+                element: <ProtectedRoute requiredRole="teacher"><CollageEditorPage /></ProtectedRoute>
             },
             {
                 path: "review-export-collage",
-                element: <CollageReviewExportPage />
+                element: <ProtectedRoute requiredRole="teacher"><CollageReviewExportPage /></ProtectedRoute>
             },
             {
                 path: "guidebook",
@@ -44,7 +45,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "image-upload",
-                element: <ImagesUploadPage /> 
+                element: <ProtectedRoute requiredRole="teacher"><ImagesUploadPage /></ProtectedRoute>
             },
             {
                 path: "user-role-selection",
@@ -56,15 +57,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: "teacher_discovery",
-                element: <TeacherDiscoveryPage />
+                element: <ProtectedRoute requiredRole="teacher"><TeacherDiscoveryPage /></ProtectedRoute>
             },
             {
                 path: "teacher-profile",
-                element: <TeacherProfilePage />
+                element: <ProtectedRoute requiredRole="teacher"><TeacherProfilePage /></ProtectedRoute>
             },
             {
                 path: "my-videos",
-                element: <MyVideosPage />
+                element: <ProtectedRoute requiredRole="teacher"><MyVideosPage /></ProtectedRoute>
             },
             {
                 path: "student-register",

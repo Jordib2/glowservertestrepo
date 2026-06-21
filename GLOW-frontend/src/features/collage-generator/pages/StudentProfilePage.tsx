@@ -5,8 +5,10 @@ import { logout } from "../../../shared/services/accountService";
 export default function StudentProfilePage() {
   const navigate = useNavigate();
   const user = sessionStorage.getItem("user");
-  const studentName = user ? JSON.parse(user).name : "Student Name";
-  const studentClass = user ? JSON.parse(user).class_name : "Unknown Class";
+  const userObj = user ? JSON.parse(user) : { name: "Student Name", class_name: "Unknown Class", school_name: null };
+  const studentName = userObj.name || "Student Name";
+  const studentClass = userObj.class_name || "Unknown Class";
+  const studentSchool = userObj.school_name;   // kan null zijn
 
   const handleLogout = async () => {
       await logout();
@@ -29,13 +31,22 @@ export default function StudentProfilePage() {
             />
           </div>
 
-          {/* Student Name & Hardcoded Class */}
+          {/* Student Name */}
           <h2 className="text-white text-2xl font-serif tracking-wide text-center mb-3">
             {studentName}
           </h2>
+
+          {/* Class */}
           <p className="text-white/80 font-sans text-sm tracking-widest uppercase bg-white/10 px-5 py-2 rounded-full border border-white/20">
             {studentClass} Class
           </p>
+
+          {/* School (alleen tonen als aanwezig) */}
+          {studentSchool && (
+            <p className="text-white/70 font-sans text-sm mt-4 bg-white/5 px-4 py-1.5 rounded-full border border-white/10">
+               {studentSchool}
+            </p>
+          )}
         </div>
         
         <button
