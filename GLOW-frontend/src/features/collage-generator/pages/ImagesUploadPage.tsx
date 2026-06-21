@@ -32,6 +32,8 @@ export default function ImagesUploadPage() {
   // School & Class state
   const [schools, setSchools] = useState<School[]>([]);
   const [selectedSchool, setSelectedSchool] = useState("");
+  const [schoolInput, setSchoolInput] = useState("");      // typed text
+  const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
   const [classInput, setClassInput] = useState("");
   const [showSchoolClassModal, setShowSchoolClassModal] = useState(false);
 
@@ -41,6 +43,11 @@ export default function ImagesUploadPage() {
       .then(data => setSchools(data))
       .catch(console.error);
   }, []);
+
+  // Filter schools based on typed input
+  const filteredSchools = schools.filter(s =>
+    (s.school_name || '').toLowerCase().includes(schoolInput.toLowerCase())
+  );
 
   // ----- Image handling (unchanged) -----
   const processFile = async (file: File, idToReplace?: string) => {
@@ -91,6 +98,8 @@ export default function ImagesUploadPage() {
   // ----- Handle Continue (open modal) -----
   const handleContinue = () => {
     if (!allValid) return;
+    setSchoolInput("");           // reset typed text
+    setShowSchoolDropdown(false);
     setShowSchoolClassModal(true);
   };
 
@@ -263,7 +272,7 @@ export default function ImagesUploadPage() {
           <div className="bg-gradient-to-b from-[#1a0a2e] to-[#2d1b4e] rounded-[28px] border border-white/20 shadow-[0_25px_60px_-30px_rgba(0,0,0,0.8)] p-8 max-w-md w-full">
             <h2 className="text-2xl md:text-3xl font-serif text-center mb-8 text-white">Select School & Class</h2>
 
-            {/* School Searchable Input */}
+            {/* School Combobox – type to filter, select from list */}
             <div className="mb-6">
               <label className="block text-white/80 text-center text-xs tracking-widest mb-3 font-sans font-medium uppercase">
                 Choose your school
@@ -271,17 +280,37 @@ export default function ImagesUploadPage() {
               <div className="relative w-full">
                 <input
                   type="text"
-                  list="school-list-modal"
-                  value={selectedSchool}
-                  onChange={(e) => setSelectedSchool(e.target.value)}
+                  value={selectedSchool || schoolInput}
+                  onChange={(e) => {
+                    setSchoolInput(e.target.value);
+                    setSelectedSchool("");          // clear selection while typing
+                    setShowSchoolDropdown(true);
+                  }}
+                  onFocus={() => setShowSchoolDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowSchoolDropdown(false), 150)}
                   placeholder="Type to search..."
                   className="w-full rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 text-white text-center text-lg px-4 py-3 outline-none focus:bg-white/20 placeholder-white/40"
                 />
-                <datalist id="school-list-modal">
-                  {schools.map((s) => (
-                    <option key={s.id} value={s.school_name}>{s.school_name}</option>
-                  ))}
-                </datalist>
+                {showSchoolDropdown && (
+                  <ul className="absolute z-10 w-full mt-1 max-h-48 overflow-y-auto rounded-[12px] bg-[#2d1b4e] border border-white/20 shadow-lg">
+                    {filteredSchools.map(s => (
+                      <li
+                        key={s.id}
+                        onMouseDown={() => {
+                          setSelectedSchool(s.school_name || '');
+                          setSchoolInput("");
+                          setShowSchoolDropdown(false);
+                        }}
+                        className="px-4 py-2 text-white text-center hover:bg-white/10 cursor-pointer"
+                      >
+                        {s.school_name}
+                      </li>
+                    ))}
+                    {filteredSchools.length === 0 && (
+                      <li className="px-4 py-2 text-white/50 text-center">No schools found</li>
+                    )}
+                  </ul>
+                )}
               </div>
             </div>
 
@@ -306,6 +335,7 @@ export default function ImagesUploadPage() {
                 onClick={() => {
                   setShowSchoolClassModal(false);
                   setSelectedSchool("");
+                  setSchoolInput("");
                   setClassInput("");
                 }}
                 className="px-6 py-3 text-white rounded-[20px] text-sm font-semibold border border-white/30 hover:bg-white/10 transition"

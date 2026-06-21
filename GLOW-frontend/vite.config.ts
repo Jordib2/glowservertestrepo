@@ -58,6 +58,12 @@ export default defineConfig({
       devOptions: {
         enabled: true,
       },
+      workbox: {
+        navigateFallbackDenylist: [/^\/api\//],   // ← THIS IS THE KEY LINE
+        skipWaiting: true,        // ← new
+        clientsClaim: true,       // ← new
+
+      },
     }),
   ],
 })
