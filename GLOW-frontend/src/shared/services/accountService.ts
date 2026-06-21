@@ -12,28 +12,26 @@ interface RegisterStudentPayload {
     class_name: FormDataEntryValue | null;
     password: FormDataEntryValue | null;
     confirm_password: FormDataEntryValue | null;
+    school_name?: FormDataEntryValue | null;
 }
 
 export async function login(payload: LoginPayload): Promise<{ access_token: string; user: any }> {
     const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-        throw new Error((await res.json()).message || "Login failed");
+        const errorData = await res.json();
+        throw new Error(JSON.stringify(errorData.detail || errorData));
     }
 
-    const data = await res.json();
-    return data;
+    return res.json();
 }
 
 export async function logout(): Promise<void> {
     const token = sessionStorage.getItem("token");
-
     try {
         if (token) {
             await fetch(`${API_URL}/api/logout`, {
@@ -52,16 +50,15 @@ export async function logout(): Promise<void> {
 export async function registerStudent(payload: RegisterStudentPayload): Promise<{ access_token: string; user: any }> {
     const res = await fetch(`${API_URL}/api/register-student`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-        throw new Error((await res.json()).message || "Registration failed");
+        const errorData = await res.json();
+        // De backend stuurt { detail: ... } terug; geef het door als JSON‑string
+        throw new Error(JSON.stringify(errorData.detail || errorData));
     }
 
-    const data = await res.json();
-    return data;
+    return res.json();
 }

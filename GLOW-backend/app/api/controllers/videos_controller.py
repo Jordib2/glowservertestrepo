@@ -5,7 +5,7 @@ from typing import List
 from app.services.image_service import ImageService
 from app.services.collage_service import CollageService
 from app.services.video_service import VideoService
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_roles
 
 import threading
 import queue
@@ -25,7 +25,7 @@ _progress_queues: dict = {}
 @limiter.limit("5/minute")
 async def generate_video(
     request: Request,
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_roles("teacher")),
     images: List[UploadFile] = File(...)
 ):
     # 1. Process images
@@ -117,7 +117,10 @@ class ExportInfoRequest(BaseModel):
 
 
 @router.post("/export-info")
-async def save_export_info(data: ExportInfoRequest, user: dict = Depends(get_current_user)):
+async def save_export_info(
+    data: ExportInfoRequest,
+    user: dict = Depends(require_roles("teacher"))
+):
     from app.core.db import get_db
     db = get_db()
     cursor = db.cursor()
@@ -133,9 +136,9 @@ async def save_export_info(data: ExportInfoRequest, user: dict = Depends(get_cur
 
 @router.get("/my-videos")
 async def get_my_videos(
-    user: dict = Depends(get_current_user),
     school_name: str = None,
-    class_name: str = None
+    class_name: str = None,
+    user: dict = Depends(require_roles("teacher"))
 ):
     from app.core.db import get_db
     db = get_db()
@@ -165,13 +168,19 @@ async def get_my_videos(
 
     return videos
 
+
 @router.delete("/videos/{video_id}")
-async def delete_video(video_id: int, user: dict = Depends(get_current_user)):
+async def delete_video(
+    video_id: int,
+    user: dict = Depends(require_roles("teacher"))
+):
     from app.core.db import get_db
     db = get_db()
     cursor = db.cursor()
-    # Only allow deletion of own videos
-    cursor.execute("DELETE FROM videos WHERE id = %s AND user_id = %s", (video_id, user["id"]))
+    cursor.execute(
+        "DELETE FROM videos WHERE id = %s AND user_id = %s",
+        (video_id, user["id"])
+    )
     if cursor.rowcount == 0:
         cursor.close()
         db.close()
@@ -181,8 +190,12 @@ async def delete_video(video_id: int, user: dict = Depends(get_current_user)):
     db.close()
     return {"message": "Video deleted"}
 
+
 @router.get("/my-classes")
-async def get_my_classes(school_name: str, user: dict = Depends(get_current_user)):
+async def get_my_classes(
+    school_name: str,
+    user: dict = Depends(require_roles("teacher"))
+):
     from app.core.db import get_db
     db = get_db()
     cursor = db.cursor()
@@ -194,3 +207,44 @@ async def get_my_classes(school_name: str, user: dict = Depends(get_current_user
     cursor.close()
     db.close()
     return {"classes": classes}
+
+@router.get("/student-collages")
+async def get_student_collages(user: dict = Depends(get_current_user)):
+    """
+    Returns all videos that match the logged-in student's school and class.
+    """
+    from app.core.db import get_db
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # Get student's school and class from users table
+    cursor.execute(
+        "SELECT school_name, class_name FROM users WHERE id = %s",
+        (user["id"],)
+    )
+    student = cursor.fetchone()
+    if not student or not student["school_name"] or not student["class_name"]:
+        cursor.close()
+        db.close()
+        return []   
+
+    # Find videos with matching school and class
+    cursor.execute(
+        """SELECT id, collage_id, video_path, school_name, class_name
+           FROM videos
+           WHERE school_name = %s AND class_name = %s AND video_path IS NOT NULL
+           ORDER BY id DESC""",
+        (student["school_name"], student["class_name"])
+    )
+    videos = cursor.fetchall()
+    cursor.close()
+    db.close()
+
+    # Convert relative paths to full URLs
+    BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
+    for v in videos:
+        path = v.get("video_path", "")
+        if path and not path.startswith("http"):
+            v["video_path"] = f"{BASE_URL}/media/{path}" if not path.startswith("media/") else f"{BASE_URL}/{path}"
+
+    return videos
