@@ -6,7 +6,6 @@ export default function CollageEditorPage() {
   const navigate = useNavigate();
 
   const videoUrl = location.state?.videoUrl;
-  const videoId = location.state?.videoId;
 
   const handleDownload = () => {
     if (videoUrl) {
