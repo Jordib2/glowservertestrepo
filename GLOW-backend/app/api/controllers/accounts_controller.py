@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field, field_validator
 from app.services.accounts_service import AccountsService
 from app.core.deps import get_current_user
+from typing import Optional
+
 
 router = APIRouter()
 service = AccountsService()
@@ -18,7 +20,7 @@ class SignupIn(BaseModel):
     confirm_password: str = Field(min_length=6, max_length=100)
     role: str = Field(pattern="^(teacher|student)$")
     class_name: str = Field(min_length=2, max_length=3)
-    school_name: str | None = None 
+    school_name: Optional[str] = None 
 
     @field_validator("role")
     @classmethod
@@ -33,7 +35,7 @@ class RegisterStudentIn(BaseModel):
     password: str = Field(min_length=6, max_length=100)
     confirm_password: str = Field(min_length=6, max_length=100)
     class_name: str = Field(min_length=2, max_length=3)
-    school_name: str | None = None   
+    school_name: Optional[str] = None   
 
 
 @router.post("/login")

@@ -1,5 +1,6 @@
 from app.persistence.repositories.accounts_repository import AccountsRepository
 from app.core.security import (hash_password, verify_password, sign_access_token)
+from typing import Optional
 
 _DUMMY_HASH = hash_password("__never_matches__")
 
@@ -27,7 +28,7 @@ class AccountsService:
             }
         }
 
-    def signup(self, name: str, username: str, password: str, role: str, class_name: str, school_name: str | None = None) -> dict:
+    def signup(self, name: str, username: str, password: str, role: str, class_name: str, school_name: Optional[str] = None) -> dict:
         if role == "admin":
             raise ValueError("Cannot create admin users")
         if self.accounts_repo.find_by_username(username, role):
@@ -40,7 +41,7 @@ class AccountsService:
             "user": user,
         }
 
-    def register_student(self, name: str, username: str, password: str, confirm_password: str, class_name: str, school_name: str | None = None) -> dict:
+    def register_student(self, name: str, username: str, password: str, confirm_password: str, class_name: str, school_name: Optional[str] = None) -> dict:
         if self.accounts_repo.find_by_username(username, "student"):
             raise ValueError("Username already exists")
         if password != confirm_password:

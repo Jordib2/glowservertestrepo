@@ -1,10 +1,11 @@
 from app.core.db import get_db
+from typing import Optional
 
 VALID_ROLES = {"teacher", "student", "admin"}
 
 class AccountsRepository:
 
-    def find_by_username(self, username: str, role: str) -> dict | None:
+    def find_by_username(self, username: str, role: str) -> Optional[dict]:
         db = get_db()
         cursor = db.cursor()
         try:
@@ -31,7 +32,7 @@ class AccountsRepository:
             cursor.close()
             db.close()
 
-    def create_user(self, name: str, username: str, password: str, role: str, class_name: str, school_name: str | None = None) -> dict:
+    def create_user(self, name: str, username: str, password: str, role: str, class_name: str, school_name: Optional[str] = None) -> dict:
         if role not in VALID_ROLES:
             raise ValueError(f"Invalid role: {role}")
 
@@ -62,7 +63,7 @@ class AccountsRepository:
             cursor.close()
             db.close()
 
-    def register_student(self, name: str, username: str, password: str, role: str, class_name: str, school_name: str | None = None) -> dict:
+    def register_student(self, name: str, username: str, password: str, role: str, class_name: str, school_name: Optional[str] = None) -> dict:
         if role != "student":
             raise ValueError("Role must be 'student' for student registration")
         # create_user already checks username uniqueness
