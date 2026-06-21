@@ -18,6 +18,8 @@ class SignupIn(BaseModel):
     confirm_password: str = Field(min_length=6, max_length=100)
     role: str = Field(pattern="^(teacher|student)$")
     class_name: str = Field(min_length=2, max_length=3)
+    school_name: str | None = None 
+
     @field_validator("role")
     @classmethod
     def validate_role(cls, v):
@@ -31,6 +33,7 @@ class RegisterStudentIn(BaseModel):
     password: str = Field(min_length=6, max_length=100)
     confirm_password: str = Field(min_length=6, max_length=100)
     class_name: str = Field(min_length=2, max_length=3)
+    school_name: str | None = None   
 
 
 @router.post("/login")
@@ -48,7 +51,7 @@ async def logout():
 @router.post("/signup")
 async def signup(signup_data: SignupIn):
     try:
-        return service.signup(name=signup_data.name, username=signup_data.username, password=signup_data.password, role=signup_data.role, class_name=signup_data.class_name)
+        return service.signup(name=signup_data.name, username=signup_data.username, password=signup_data.password, role=signup_data.role, class_name=signup_data.class_name, school_name=signup_data.school_name )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -56,6 +59,6 @@ async def signup(signup_data: SignupIn):
 @router.post("/register-student")
 async def register_student(register_data: RegisterStudentIn):
     try:
-        return service.register_student(name=register_data.name, username=register_data.username, password=register_data.password, confirm_password=register_data.confirm_password, class_name=register_data.class_name)
+        return service.register_student(name=register_data.name, username=register_data.username, password=register_data.password, confirm_password=register_data.confirm_password, class_name=register_data.class_name, school_name=register_data.school_name )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
